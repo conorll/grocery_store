@@ -34,3 +34,18 @@ steps:
     source venv/bin/activate
     python manage.py test
   displayName: 'Run tests'
+
+- task: CopyFiles@2
+  inputs:
+    contents: |
+      **/*
+      !venv/**
+      !**/__pycache__/**
+    targetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Copy Files to Artifact Staging Directory'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'grocery_store'
+  displayName: 'Publish Build Artifact'
