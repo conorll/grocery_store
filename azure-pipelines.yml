@@ -12,10 +12,23 @@ pool:
 steps:
 - script: |
     virtualenv venv
+  displayName: 'Create Virtual Environment'
+
+- script: |
     source venv/bin/activate
     python -m pip install --upgrade pip
     pip install django
-  displayName: 'Install prerequisites'
+  displayName: 'Install Django'
+
+- script: |
+    source venv/bin/activate
+    python manage.py makemigrations
+  displayName: 'Make Migrations'
+
+- script: |
+    source venv/bin/activate
+    python manage.py migrate 
+  displayName: 'Apply Migrations'
 
 - script: |
     source venv/bin/activate
