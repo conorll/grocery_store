@@ -7,34 +7,17 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
-strategy:
-  matrix:
-    Python38:
-      PYTHON_VERSION: '3.8'
-    Python39:
-      PYTHON_VERSION: '3.9'
-    Python310:
-      PYTHON_VERSION: '3.10'
-  maxParallel: 3
+  name: mypool
 
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(PYTHON_VERSION)'
-    architecture: 'x64'
-
 - script: |
+    virtualenv venv
+    source venv/bin/activate
     python -m pip install --upgrade pip
-    pip install -r requirements.txt
+    pip install django
   displayName: 'Install prerequisites'
 
 - script: |
+    source venv/bin/activate
     python manage.py test
   displayName: 'Run tests'
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFiles: '**/TEST-*.xml'
-    testRunTitle: 'Python $(PYTHON_VERSION)'
-  condition: succeededOrFailed()
