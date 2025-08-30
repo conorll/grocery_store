@@ -1,0 +1,17 @@
+{% extends "grocery_store_app/layout.html" %}
+
+{% block body %}
+<h2>Stores</h2>
+<div class="row mx-3">
+  {% for store in stores %}
+  <div class="card" style="width: 20rem;">
+    <div class="card-body">
+      <h5 class="card-title">{{ store.name }}</h5>
+      <h5 class="card-title">{{ store.address }}</h5>
+      <h5 class="card-title">{{ store.phone_number }}</h5>
+      <p class="card-text">{{ store.description }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
