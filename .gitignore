@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Django Migrations (optional – keep if you want versioned migration history)
+# *.pyc inside migrations/ is safe to ignore, but not the migration `.py` files themselves
+**/migrations/*.pyc
+**/migrations/__pycache__/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.env/
+*.env
+
+# VS Code
+.vscode/
+
+# SQLite database
+*.sqlite3
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Coverage
+htmlcov/
+.coverage
+.tox/
+.cache/
+nosetests.xml
+coverage.xml
+
+# MyPy
+.mypy_cache/
+
+# Pytest
+.pytest_cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Static/media (optional, depending on your config)
+staticfiles/
+media/
