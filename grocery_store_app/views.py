@@ -2,9 +2,13 @@ from django.shortcuts import render, redirect
 
 from .models import Product
 from .models import Store
-from .forms import PostcodeForm
+from .forms import PostcodeForm, CustomUserCreationForm
 from .utils import geocode_postcode, haversine
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth import login
 
 # Create your views here.
 
@@ -52,4 +56,21 @@ def stores(request):
         "distance_km": distance_km
     })
 
+#Client Management - User Registration
+def authView(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Auto-login after successful registration
+            login(request, user)
+            return redirect("index")
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, "registration/signup.html", {"form": form})
 
+def profile(request):
+    return render(request, "grocery_store_app/profile.html", {"user": request.user})
