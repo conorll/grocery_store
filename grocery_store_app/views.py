@@ -56,13 +56,12 @@ def stores(request):
         "distance_km": distance_km
     })
 
-#Client Management - User Registration
+#Client Management
 def authView(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Auto-login after successful registration
             login(request, user)
             return redirect("index")
         else:
