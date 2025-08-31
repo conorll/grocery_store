@@ -1,5 +1,5 @@
 from django import forms
-from .models_.store import Store
+from .models.store import Store
 
 # Form for user to input postcode to find closest store
 class PostcodeForm(forms.Form):

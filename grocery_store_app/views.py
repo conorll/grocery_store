@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
 from .models import Product
-from .models_ import Store
+from .models import Store
 from .forms import PostcodeForm
 from .forms import StoreForm
 from .utils import geocode_postcode, haversine

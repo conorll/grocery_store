@@ -1,9 +1,11 @@
 import requests
 import math
+import logging
+from typing import Tuple
 
 API_KEY = "68b3c071edb8e216867405vxhafdb0c" # Geocode.maps.co free API key
 
-def geocode_postcode(postcode):
+def geocode_postcode(postcode: str) -> Tuple[float, float] | Tuple[None, None]:
     try:
         response = requests.get("https://geocode.maps.co/search", params={
             "postalcode": postcode,
@@ -17,7 +19,7 @@ def geocode_postcode(postcode):
             lon = float(data[0]["lon"])
             return lat, lon
     except Exception as e:
-        print(f"Geocoding error: {e}")
+        logging.error(f"Geocoding error: {e}")
     
     return None, None
 
