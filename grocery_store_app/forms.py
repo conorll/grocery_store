@@ -11,9 +11,3 @@ class PostcodeForm(forms.Form):
             'placeholder': 'e.g. 2000'
         })
     )
-
-# Form for adding/editing store objects
-class StoreForm(forms.ModelForm):
-    class Meta:
-        model = Store
-        fields = ['id', 'name', 'address', 'postcode', 'phone_number', 'opening_hours']

@@ -5,5 +5,4 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("products", views.products, name="products"),
     path("stores", views.stores, name="stores"),
-    path('stores/manage/', views.manage_stores, name='manage_stores'),
 ]

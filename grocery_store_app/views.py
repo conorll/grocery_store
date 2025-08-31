@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect
 from .models import Product
 from .models import Store
 from .forms import PostcodeForm
-from .forms import StoreForm
 from .utils import geocode_postcode, haversine
 from django.http import HttpResponse
 
@@ -18,7 +17,7 @@ def products(request):
     "products": product_objects
   })
 
-#Stores listig and closest store finder view
+#Stores listing and closest store finder view
 def stores(request):
     # Get all stores with valid coordinates
     store_objects = Store.objects.exclude(latitude__isnull=True, longitude__isnull=True)
@@ -53,21 +52,4 @@ def stores(request):
         "distance_km": distance_km
     })
 
-# Store management view (add/edit stores)
-def manage_stores(request):
-    if request.method == 'POST':
-        form = StoreForm(request.POST)
-        if form.is_valid():
-            store = form.save(commit=False)
-            # Geocode postcode to get coordinates for new store
-            lat, lon = geocode_postcode(store.postcode)
-            store.latitude = lat
-            store.longitude = lon
-            store.save()
-            return redirect('manage_stores')  # redirect to clear form after submission
-    else:
-        form = StoreForm()
-        
-    # Get all stores for display
-    stores = Store.objects.all()
-    return render(request, 'grocery_store_app/stores_management.html', {'form': form, 'stores': stores})
+
