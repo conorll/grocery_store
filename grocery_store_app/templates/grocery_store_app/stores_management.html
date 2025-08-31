@@ -1,0 +1,65 @@
+{% extends "grocery_store_app/layout.html" %}
+{% block title %}Manage Stores{% endblock %}
+
+{% block body %}
+<div class="container">
+  <h2 class="mb-4">Manage Stores</h2>
+    
+    <!--Add store form-->
+    <form method="post" style="
+    display: grid;
+    grid-template-columns: max-content 300px;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    width: max-content;
+    ">
+    {% csrf_token %}
+
+        <!--Store Name Input-->
+        <label for="id_name">Name:</label>
+        <input type="text" name="name" id="id_name">
+
+        <!--Store Address Input-->
+        <label for="id_address">Address:</label>
+        <input type="text" name="address" id="id_address">
+
+        <!--Store Postcode Input-->
+        <label for="id_postcode">Postcode:</label>
+        <input type="text" name="postcode" id="id_postcode">
+
+        <!--Store Phone Number Input-->
+        <label for="id_phone_number">Phone number:</label>
+        <input type="text" name="phone_number" id="id_phone_number">
+
+        <!--Store Opening Hours Input-->
+        <label for="id_description">Opening hours:</label>
+        <input type="text" name="description" id="id_description">
+
+        <!--Submit button-->
+        <div></div>
+        <button type="submit" class="btn btn-primary">Add Store</button>
+    </form>
+</br>
+
+  <!--List of current stores-->  
+  <h4>Current Stores:</h4>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Postcode</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for store in stores %}
+      <tr>
+        <td>{{ store.name }}</td>
+        <td>{{ store.address }}</td>
+        <td>{{ store.postcode }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

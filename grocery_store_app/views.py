@@ -1,12 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from .models import Product
 from .models_ import Store
 from .forms import PostcodeForm
+from .forms import StoreForm
 from .utils import geocode_postcode, haversine
-# Create your views here.
 from django.http import HttpResponse
 
+# Create your views here.
 
 def index(request):
   return render(request, "grocery_store_app/index.html")
@@ -17,25 +18,24 @@ def products(request):
     "products": product_objects
   })
 
+#Stores listig and closest store finder view
 def stores(request):
-  store_objects = Store.objects.all()
-  return render(request, "grocery_store_app/stores.html", {
-    "stores": store_objects
-  })
-
-def stores(request):
+    # Get all stores with valid coordinates
     store_objects = Store.objects.exclude(latitude__isnull=True, longitude__isnull=True)
     closest_store = None
     distance_km = None
 
+    # Handle postcode form submission
     if request.method == 'POST':
         form = PostcodeForm(request.POST)
         if form.is_valid():
             postcode = form.cleaned_data['postcode']
+            # Geocode the postcode to get latitude and longitude
             user_lat, user_lng = geocode_postcode(postcode)
 
             if user_lat and user_lng:
                 min_distance = float('inf')
+                # Find the closest store using haversine formula
                 for store in store_objects:
                     dist = haversine(user_lat, user_lng, store.latitude, store.longitude)
                     if dist < min_distance:
@@ -45,6 +45,7 @@ def stores(request):
     else:
         form = PostcodeForm()
 
+    # Render the stores page with form and closest store info
     return render(request, "grocery_store_app/stores.html", {
         "stores": store_objects,
         "form": form,
@@ -52,12 +53,21 @@ def stores(request):
         "distance_km": distance_km
     })
 
-def get_postcode(request):
+# Store management view (add/edit stores)
+def manage_stores(request):
     if request.method == 'POST':
-        form = PostcodeForm(request.POST)
+        form = StoreForm(request.POST)
         if form.is_valid():
-            postcode = form.cleaned_data['postcode']
-            return render(request, 'store_result.html', {'postcode': postcode})
+            store = form.save(commit=False)
+            # Geocode postcode to get coordinates for new store
+            lat, lon = geocode_postcode(store.postcode)
+            store.latitude = lat
+            store.longitude = lon
+            store.save()
+            return redirect('manage_stores')  # redirect to clear form after submission
     else:
-        form = PostcodeForm()
-    return render(request, 'get_postcode.html', {'form': form})
+        form = StoreForm()
+        
+    # Get all stores for display
+    stores = Store.objects.all()
+    return render(request, 'grocery_store_app/stores_management.html', {'form': form, 'stores': stores})

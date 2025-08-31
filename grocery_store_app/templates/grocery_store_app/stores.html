@@ -7,6 +7,7 @@
   <!-- Find Closest Store Form -->
   <div class="row justify-content-center mb-4">
     <div class="col-md-6">
+      <!-- Django form for user to enter postcode-->
       <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
@@ -15,29 +16,35 @@
     </div>
   </div>
 
+  <!-- Display closest store if available -->
   {% if closest_store %}
   <div class="alert alert-success text-center">
     <strong>Your closest store is:</strong><br>
     {{ closest_store.name }} ({{ distance_km }} km away)
   </div>
   {% endif %}
-  
+
+  <!-- Store Cards -->
   <div class="row gy-4">
     {% for store in stores %}
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm h-100">
         <div class="card-body">
+          <!--Store Name-->
           <h5 class="card-title fw-bold">{{ store.name }}</h5>
           
+          <!--Store address with google Maps link-->
           <p class="mb-1">
-            <strong>Address:</strong><a href="https://www.google.com/maps/search/?api=1&query={{ store.address|urlencode }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">{{ store.address }}</a>
+            <strong>Address: </strong><a href="https://www.google.com/maps/search/?api=1&query={{ store.address|urlencode }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">{{ store.address }}</a>
           </p>
           
+          <!--Store phone number with link-->
           <p class="mb-1">
-            <strong>Phone:</strong><a href="tel:{{ store.phone_number }}" class="text-decoration-none">{{ store.phone_number }}</a>
+            <strong>Phone: </strong><a href="tel:{{ store.phone_number }}" class="text-decoration-none">{{ store.phone_number }}</a>
           </p>
           
-          <p class="card-text text-muted">{{ store.description|linebreaksbr }}</p>
+          <!--Store opening hours-->
+          <p class="card-text text-muted">{{ store.opening_hours|linebreaksbr }}</p>
         </div>
       </div>
     </div>
