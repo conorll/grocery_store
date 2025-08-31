@@ -5,3 +5,5 @@ class Store(models.Model):
   address = models.CharField()
   phone_number = models.CharField()
   description = models.CharField()
+  latitude = models.FloatField()
+  longitude = models.FloatField()
