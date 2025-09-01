@@ -1,16 +1,58 @@
 {% extends "grocery_store_app/layout.html" %}
 
+{% block title %}Profile - Grocery Store{% endblock %}
+
 {% block body %}
-<h2>Profile</h2>
-<div class="row mx-3">
-  <div class="card" style="width: 20rem;">
-    <div class="card-body">
-      <h5 class="card-title">Username: {{ user.username }}</h5>
-      <h5 class="card-title">Email: {{ user.email }}</h5>
-      <h5 class="card-title">First Name: {{ user.first_name }}</h5>
-      <h5 class="card-title">Last Name: {{ user.last_name }}</h5>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">
+            <i class="bi bi-person-circle"></i> User Profile
+          </h4>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Username:</strong></div>
+            <div class="col-sm-8">{{ user.username }}</div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Email:</strong></div>
+            <div class="col-sm-8">{{ user.email }}</div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>First Name:</strong></div>
+            <div class="col-sm-8">{{ user.first_name|default:"Not provided" }}</div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Last Name:</strong></div>
+            <div class="col-sm-8">{{ user.last_name|default:"Not provided" }}</div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-sm-4"><strong>Member Since:</strong></div>
+            <div class="col-sm-8">{{ user.date_joined|date:"M d, Y" }}</div>
+          </div>
+          
+          <div class="row">
+            <div class="col-sm-4"><strong>Last Login:</strong></div>
+            <div class="col-sm-8">{{ user.last_login|date:"M d, Y H:i"|default:"Never" }}</div>
+          </div>
+        </div>
+        
+        <div class="card-footer text-center">
+          <div class="btn-group" role="group">
+            <a href="{% url 'logout' %}" class="btn btn-danger">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
 </div>
 {% endblock %}

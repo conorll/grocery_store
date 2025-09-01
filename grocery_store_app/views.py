@@ -71,5 +71,6 @@ def authView(request):
     
     return render(request, "registration/signup.html", {"form": form})
 
+@login_required
 def profile(request):
     return render(request, "grocery_store_app/profile.html", {"user": request.user})
