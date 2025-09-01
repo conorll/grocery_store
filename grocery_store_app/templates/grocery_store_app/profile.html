@@ -1,0 +1,16 @@
+{% extends "grocery_store_app/layout.html" %}
+
+{% block body %}
+<h2>Profile</h2>
+<div class="row mx-3">
+  <div class="card" style="width: 20rem;">
+    <div class="card-body">
+      <h5 class="card-title">Username: {{ user.username }}</h5>
+      <h5 class="card-title">Email: {{ user.email }}</h5>
+      <h5 class="card-title">First Name: {{ user.first_name }}</h5>
+      <h5 class="card-title">Last Name: {{ user.last_name }}</h5>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
