@@ -2,15 +2,18 @@
 
 {% block body %}
 <h2>Products</h2>
-<div class="row mx-3">
+<div class="row mx-3 gap-3">
   {% for product in products %}
-  <div class="card" style="width: 20rem;">
-    <div class="card-body">
-      <h5 class="card-title">{{ product.name }}</h5>
-      <h5 class="card-title">${{ product.price }}</h5>
-      <h5 class="card-title">{{ product.quantity }} in stock</h5>
-      <p class="card-text">{{ product.description }}</p>
-    </div>
+  <div class="card" style="width: 18rem;">
+    <a class="text-decoration-none text-dark" href="{% url 'product' product.id %}">
+      <img class="card-img-top" src="{{ product.image_url }}" alt="{{ product.title }}">
+      <div class="card-body">
+        <h5 class="card-title">{{ product.name }}</h5>
+        <h5 class="card-title">${{ product.price }}</h5>
+        <h5 class="card-title">{{ product.quantity }} in stock</h5>
+        <p class="card-text">{{ product.description }}</p>
+      </div>
+    </a>
   </div>
   {% endfor %}
 </div>

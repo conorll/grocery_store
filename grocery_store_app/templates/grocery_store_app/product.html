@@ -1,0 +1,17 @@
+{% extends "grocery_store_app/layout.html" %}
+
+{% block body %}
+<div class="d-flex justify-content-center">
+  <img class="" src="{{ product.image_url }}" alt="{{ product.title }}" style="width: 30rem;">
+  <div class="d-flex flex-column g-5 p-5">
+    <h1 class="">{{ product.name }}</h1>
+    <h2 class="">${{ product.price }}</h1>
+      <form class="mt-auto" action="{% url 'index' %}" method="GET">
+        <label class="form-label" for="quantity">Quantity</label>
+        <input class="form-control my-2" type="number" id="quantity" name="quantity" min="1"
+          max="{{ product.quantity }}" value="1"">
+      <button type=" submit" class="btn btn-primary">Buy</button>
+      </form>
+  </div>
+</div>
+{% endblock %}

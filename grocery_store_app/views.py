@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import Product
 from .models import Store
@@ -19,6 +19,12 @@ def products(request):
   product_objects = Product.objects.all()
   return render(request, "grocery_store_app/products.html", {
     "products": product_objects
+  })
+
+def product(request, id):
+  product_object = get_object_or_404(Product, id=id)
+  return render(request, "grocery_store_app/product.html", {
+    "product": product_object
   })
 
 #Stores listing and closest store finder view
