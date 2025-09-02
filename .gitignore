@@ -51,4 +51,8 @@ dist/
 
 # Static/media (optional, depending on your config)
 staticfiles/
-media/
+media/ 
+__pycache__/
+*.pyc
+db.sqlite3
+
