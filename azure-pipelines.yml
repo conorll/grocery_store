@@ -4,48 +4,48 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- main
+  - main
 
 pool:
-  name: mypool
+  name: Azure Pipelines
 
 steps:
-- script: |
-    virtualenv venv
-  displayName: 'Create Virtual Environment'
+  - script: |
+      virtualenv venv
+    displayName: "Create Virtual Environment"
 
-- script: |
-    source venv/bin/activate
-    python -m pip install --upgrade pip
-    pip install django
-  displayName: 'Install Django'
+  - script: |
+      source venv/bin/activate
+      python -m pip install --upgrade pip
+      pip install django
+    displayName: "Install Django"
 
-- script: |
-    source venv/bin/activate
-    python manage.py makemigrations
-  displayName: 'Make Migrations'
+  - script: |
+      source venv/bin/activate
+      python manage.py makemigrations
+    displayName: "Make Migrations"
 
-- script: |
-    source venv/bin/activate
-    python manage.py migrate 
-  displayName: 'Apply Migrations'
+  - script: |
+      source venv/bin/activate
+      python manage.py migrate
+    displayName: "Apply Migrations"
 
-- script: |
-    source venv/bin/activate
-    python manage.py test
-  displayName: 'Run tests'
+  - script: |
+      source venv/bin/activate
+      python manage.py test
+    displayName: "Run tests"
 
-- task: CopyFiles@2
-  inputs:
-    contents: |
-      **/*
-      !venv/**
-      !**/__pycache__/**
-    targetFolder: '$(Build.ArtifactStagingDirectory)'
-  displayName: 'Copy Files to Artifact Staging Directory'
+  - task: CopyFiles@2
+    inputs:
+      contents: |
+        **/*
+        !venv/**
+        !**/__pycache__/**
+      targetFolder: "$(Build.ArtifactStagingDirectory)"
+    displayName: "Copy Files to Artifact Staging Directory"
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'grocery_store'
-  displayName: 'Publish Build Artifact'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: "$(Build.ArtifactStagingDirectory)"
+      artifactName: "grocery_store"
+    displayName: "Publish Build Artifact"
