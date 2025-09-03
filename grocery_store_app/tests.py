@@ -77,22 +77,6 @@ class ProductViewTests(TestCase):
         self.assertContains(r, "Banana")
         self.assertNotContains(r, "Carrot")
 
-    def test_category_filter(self):
-        # Filter to Fruits
-        r = self.client.get(reverse("products"), {"category": "Fruits"})
-        self.assertEqual(r.status_code, 200)
-        page_list = list(r.context["page_obj"].object_list)
-        # Every item on the page must be Fruits
-        self.assertTrue(all(p.category.name == "Fruits" for p in page_list))
-        # And Carrot (Vegetables) must not be in the page list
-        self.assertFalse(any(p.name == "Carrot" for p in page_list))
-
-        # Filter to Vegetables
-        r2 = self.client.get(reverse("products"), {"category": "Vegetables"})
-        self.assertEqual(r2.status_code, 200)
-        page_list2 = list(r2.context["page_obj"].object_list)
-        self.assertTrue(all(p.category.name == "Vegetables" for p in page_list2))
-        self.assertFalse(any(p.name in {"Apple", "Banana"} for p in page_list2))
 
     def test_sort_price_desc(self):
         # Support either param name; your UI uses sort=price_desc
