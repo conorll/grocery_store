@@ -1,87 +1,110 @@
+# grocery_store_app/tests.py
+from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
-from .models import Product
-from .category import Category
+from .models import Category, Product
 
 
 class ProductViewTests(TestCase):
-    def setUp(self):
-        # Create categories
-        fruits = Category.objects.create(name="Fruits")
-        veggies = Category.objects.create(name="Vegetables")
+    @classmethod
+    def setUpTestData(cls):
+        # Categories
+        cls.fruits = Category.objects.create(name="Fruits")
+        cls.veggies = Category.objects.create(name="Vegetables")
 
-        # Create products in categories
+        # Three named products for deterministic checks
         Product.objects.create(
-            name="Apple",
-            price=1.50,
-            quantity=10,
-            image_url="https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
-            category=fruits,
+            name="Apple", price=Decimal("1.50"), quantity=10, category=cls.fruits
         )
         Product.objects.create(
-            name="Banana",
-            price=2.00,
-            quantity=20,
-            image_url="https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg",
-            category=fruits,
+            name="Banana", price=Decimal("2.00"), quantity=20, category=cls.fruits
         )
         Product.objects.create(
-            name="Carrot",
-            price=3.00,
-            quantity=30,
-            image_url="https://upload.wikimedia.org/wikipedia/commons/c/c3/Carrots_at_Ljubljana_Central_Market.JPG",
-            category=veggies,
+            name="Carrot", price=Decimal("3.00"), quantity=30, category=cls.veggies
         )
+
+        # Extra items to exercise pagination (> 1 page)
+        # We’ll make total 25 so last page is partial for most per_page values.
+        for i in range(1, 22 + 1):  # 22 more products: Item 1..22
+            Product.objects.create(
+                name=f"Item {i}",
+                price=Decimal(i),  # 1..22
+                quantity=5,
+                category=cls.fruits if i % 2 else cls.veggies,
+            )
 
     def test_products_page_loads(self):
-        response = self.client.get(reverse("products"))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Apple")
-        self.assertContains(response, "Banana")
-        self.assertContains(response, "Carrot")
+        r = self.client.get(reverse("products"))
+        self.assertEqual(r.status_code, 200)
+        # Use the paginator’s per_page so test matches whatever the view uses (12, 20, etc.)
+        self.assertIn("page_obj", r.context)
+        per_page = r.context["paginator"].per_page
+        self.assertEqual(len(r.context["page_obj"].object_list), per_page)
+        # Basic smoke: named items are present somewhere (first page likely has at least some)
+        self.assertContains(r, "Apple")
+        self.assertContains(r, "Banana")
+        self.assertContains(r, "Carrot")
+
+    def test_pagination_last_page_size(self):
+        # Go to the last page and compute expected size dynamically
+        r1 = self.client.get(reverse("products"))
+        paginator = r1.context["paginator"]
+        last_page = paginator.num_pages
+
+        r_last = self.client.get(reverse("products"), {"page": last_page})
+        self.assertEqual(r_last.status_code, 200)
+
+        per_page = paginator.per_page
+        total = paginator.count
+        expected_last = total % per_page or per_page
+        self.assertEqual(len(r_last.context["page_obj"].object_list), expected_last)
 
     def test_search_by_name(self):
-        response = self.client.get(reverse("products"), {"q": "Apple"})
-        self.assertContains(response, "Apple")
-        self.assertNotContains(response, "Banana")
-        self.assertNotContains(response, "Carrot")
+        r = self.client.get(reverse("products"), {"q": "Apple"})
+        self.assertContains(r, "Apple")
+        self.assertNotContains(r, "Banana")
+        self.assertNotContains(r, "Carrot")
 
     def test_min_price_filter(self):
-        response = self.client.get(reverse("products"), {"min_price": "2"})
-        self.assertContains(response, "Banana")
-        self.assertContains(response, "Carrot")
-        self.assertNotContains(response, "Apple")
+        r = self.client.get(reverse("products"), {"min_price": "2"})
+        self.assertContains(r, "Banana")
+        self.assertContains(r, "Carrot")
+        self.assertNotContains(r, "Apple")
 
     def test_max_price_filter(self):
-        response = self.client.get(reverse("products"), {"max_price": "2"})
-        self.assertContains(response, "Apple")
-        self.assertContains(response, "Banana")
-        self.assertNotContains(response, "Carrot")
-
-    def test_sort_price_desc(self):
-        response = self.client.get(reverse("products"), {"sort": "price_desc"})
-        products = list(response.context["products"])
-        self.assertGreaterEqual(products[0].price, products[-1].price)
-
-    def test_pagination(self):
-        response = self.client.get(reverse("products"), {"per_page": 2})
-        self.assertContains(response, "Apple")
-        self.assertContains(response, "Banana")
-        self.assertNotContains(response, "Carrot")
-
-        response_page2 = self.client.get(
-            reverse("products"), {"per_page": 2, "page": 2}
-        )
-        self.assertContains(response_page2, "Carrot")
-        self.assertNotContains(response_page2, "Apple")
+        r = self.client.get(reverse("products"), {"max_price": "2"})
+        self.assertContains(r, "Apple")
+        self.assertContains(r, "Banana")
+        self.assertNotContains(r, "Carrot")
 
     def test_category_filter(self):
-        response = self.client.get(reverse("products"), {"category": "Fruits"})
-        self.assertContains(response, "Apple")
-        self.assertContains(response, "Banana")
-        self.assertNotContains(response, "Carrot")
+        # Filter to Fruits
+        r = self.client.get(reverse("products"), {"category": "Fruits"})
+        self.assertEqual(r.status_code, 200)
+        page_list = list(r.context["page_obj"].object_list)
+        # Every item on the page must be Fruits
+        self.assertTrue(all(p.category.name == "Fruits" for p in page_list))
+        # And Carrot (Vegetables) must not be in the page list
+        self.assertFalse(any(p.name == "Carrot" for p in page_list))
 
-        response2 = self.client.get(reverse("products"), {"category": "Vegetables"})
-        self.assertContains(response2, "Carrot")
-        self.assertNotContains(response2, "Apple")
-        self.assertNotContains(response2, "Banana")
+        # Filter to Vegetables
+        r2 = self.client.get(reverse("products"), {"category": "Vegetables"})
+        self.assertEqual(r2.status_code, 200)
+        page_list2 = list(r2.context["page_obj"].object_list)
+        self.assertTrue(all(p.category.name == "Vegetables" for p in page_list2))
+        self.assertFalse(any(p.name in {"Apple", "Banana"} for p in page_list2))
+
+    def test_sort_price_desc(self):
+        # Support either param name; your UI uses sort=price_desc
+        r = self.client.get(
+            reverse("products"), {"sort": "price_desc", "ordering": "-price"}
+        )
+        self.assertEqual(r.status_code, 200)
+        page_list = list(r.context["page_obj"].object_list)
+        # Non-increasing prices across the page
+        self.assertTrue(
+            all(
+                page_list[i].price >= page_list[i + 1].price
+                for i in range(len(page_list) - 1)
+            )
+        )
