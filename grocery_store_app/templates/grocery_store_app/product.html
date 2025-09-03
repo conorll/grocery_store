@@ -1,80 +1,18 @@
 {% extends "grocery_store_app/layout.html" %}
 
 {% block body %}
-<h2>Products</h2>
-
-<!-- Filter form -->
-<form method="get" class="row g-3 mb-4">
-  <div class="col-md-3">
-    <input type="text" name="q" class="form-control" placeholder="Search…" value="{{ query }}">
+<div class="d-flex justify-content-center">
+  <img src="{{ product.image_url }}" alt="{{ product.title }}" style="width: 30rem;">
+  <div class="d-flex flex-column g-5 p-5">
+    <h1>{{ product.name }}</h1>
+    <h3>${{ product.price }}</h1>
+      <p>{{ product.quantity }} in stock</h1>
+      <form class="mt-auto" action="{% url 'index' %}" method="GET">
+        <label class="form-label" for="quantity">Quantity</label>
+        <input class="form-control my-2" type="number" id="quantity" name="quantity" min="1"
+          max="{{ product.quantity }}" value="1"">
+      <button type=" submit" class="btn btn-primary">Buy</button>
+      </form>
   </div>
-  <div class="col-md-2">
-    <input type="text" name="min_price" class="form-control" placeholder="Min price" value="{{ min_price }}">
-  </div>
-  <div class="col-md-2">
-    <input type="text" name="max_price" class="form-control" placeholder="Max price" value="{{ max_price }}">
-  </div>
-  <div class="col-md-2">
-    <select name="sort" class="form-select">
-      <option value="">Sort</option>
-      <option value="price_asc"  {% if sort == "price_asc" %}selected{% endif %}>Price ↑</option>
-      <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price ↓</option>
-      <option value="name_asc"   {% if sort == "name_asc" %}selected{% endif %}>Name A–Z</option>
-      <option value="name_desc"  {% if sort == "name_desc" %}selected{% endif %}>Name Z–A</option>
-      <option value="newest"     {% if sort == "newest" %}selected{% endif %}>Newest</option>
-      <option value="oldest"     {% if sort == "oldest" %}selected{% endif %}>Oldest</option>
-    </select>
-  </div>
-  <div class="col-md-2">
-    <select name="per_page" class="form-select">
-      {% for n in per_page_options %}
-        <option value="{{ n }}" {% if per_page|stringformat:"s" == n|stringformat:"s" %}selected{% endif %}>
-          {{ n }} / page
-        </option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-1">
-    <button type="submit" class="btn btn-primary w-100">Apply</button>
-  </div>
-</form>
-
-<!-- Product cards -->
-<div class="row mx-3 gap-3">
-  {% for product in products %}
-  <div class="card" style="width: 18rem;">
-    <a class="text-decoration-none text-dark" href="{% url 'product' product.id %}">
-      <img class="card-img-top" src="{{ product.image_url }}" alt="{{ product.name }}">
-      <div class="card-body">
-        <h5 class="card-title">{{ product.name }}</h5>
-        <h5 class="card-title">${{ product.price }}</h5>
-        <p>{{ product.quantity }} in stock</p>
-      </div>
-    </a>
-  </div>
-  {% empty %}
-    <p>No products match your filters.</p>
-  {% endfor %}
 </div>
-
-<!-- Pagination -->
-<nav class="mt-4">
-  <ul class="pagination justify-content-center">
-    {% if page_obj.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ querystring }}">Previous</a>
-      </li>
-    {% endif %}
-
-    <li class="page-item disabled">
-      <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-    </li>
-
-    {% if page_obj.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ querystring }}">Next</a>
-      </li>
-    {% endif %}
-  </ul>
-</nav>
 {% endblock %}

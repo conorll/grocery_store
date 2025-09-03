@@ -18,7 +18,8 @@ steps:
       source venv/bin/activate
       python -m pip install --upgrade pip
       pip install django
-    displayName: "Install Django"
+      pip install requests
+    displayName: "Install Packages"
 
   - script: |
       source venv/bin/activate
