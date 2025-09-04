@@ -8,7 +8,7 @@ admin.site.site_header = "GSC Administration"
 admin.site.index_title = "Site Administration"
 
 urlpatterns = [
-    path("", views.index, name="index"),
+    path("", views.products, name="index"),
     path("products", views.products, name="products"),
     path("product/<int:id>", views.product, name="product"),
     path("stores", views.stores, name="stores"),
