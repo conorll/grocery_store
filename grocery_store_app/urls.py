@@ -14,7 +14,10 @@ urlpatterns = [
     path("stores", views.stores, name="stores"),
 
     #Client Management
+    #Registration
     path("signup/", authView, name="signup"),
+    #Login/Logout/Password Management
     path("accounts/", include("django.contrib.auth.urls")),
+    #Profile
     path("profile/", views.profile, name="profile"),
 ]

@@ -143,7 +143,7 @@ def stores(request):
     )
 
 
-# Client Management
+# Client Management - User Registration
 def authView(request):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
@@ -158,6 +158,7 @@ def authView(request):
 
     return render(request, "registration/signup.html", {"form": form})
 
+# User Profile View
 @login_required
 def profile(request):
     return render(request, "grocery_store_app/profile.html", {"user": request.user})
