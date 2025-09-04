@@ -24,7 +24,7 @@ def geocode_postcode(postcode: str) -> Tuple[float, float] | Tuple[None, None]:
     return None, None
 
 
-# Haversine formula to calculate distance between two lat/lon points
+# Haversine formula to calculate distance between two lat/lon point
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371  # Earth radius in km
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
