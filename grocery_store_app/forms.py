@@ -14,6 +14,7 @@ class PostcodeForm(forms.Form):
         })
     )
 
+# Custom user registration form extending Django's UserCreationForm
 class CustomUserCreationForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True)
     last_name = forms.CharField(max_length=30, required=True)
