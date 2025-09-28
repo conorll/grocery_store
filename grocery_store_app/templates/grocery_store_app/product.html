@@ -5,14 +5,52 @@
   <img src="{{ product.image_url }}" alt="{{ product.title }}" style="width: 30rem;">
   <div class="d-flex flex-column g-5 p-5">
     <h1>{{ product.name }}</h1>
-    <h3>${{ product.price }}</h1>
-      <p>{{ product.quantity }} in stock</h1>
-      <form class="mt-auto" action="{% url 'index' %}" method="GET">
-        <label class="form-label" for="quantity">Quantity</label>
-        <input class="form-control my-2" type="number" id="quantity" name="quantity" min="1"
-          max="{{ product.quantity }}" value="1"">
+    <h3>${{ product.price }}</h3>
+
+    <form class="mt-auto" id="store-form" action="{% url 'product_select_store' product.id %}" method="POST">
+      {% csrf_token %}
+      <label class="form-label" for="store">Store</label>
+      <select class="form-select" name="store" id="store">
+        {% if not selected_store%}
+        <option value="" disabled selected>Select a store</option>
+        {% endif %}
+        {% for store in stores %}
+        {% if store.quantity != -1 %}
+        {% if selected_store and store.id == selected_store.id %}
+        <option value="{{ store.id }}" selected>{{ store.name }} - {{ store.quantity }} in stock</option>
+        {% else %}
+        <option value="{{ store.id }}">{{ store.name }} - {{ store.quantity }} in stock</option>
+        {% endif %}
+        {%else %}
+        {% if selected_store and store.id == selected_store.id %}
+        <option value="{{ store.id }}" selected disabled>{{ store.name }} - Unavailable</option>
+        {% else %}
+        <option value="{{ store.id }}" disabled>{{ store.name }} - Unavailable</option>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+      </select>
+    </form>
+
+    {% if selected_store.quantity > 0 %}
+
+    <form class="mt-auto" action="{% url 'index' %}" method="GET">
+      <label class="form-label" for="quantity">Quantity</label>
+      <input class="form-control my-2" type="number" id="quantity" name="quantity" min="1"
+        max="{{ selected_store.quantity }}" value="1">
       <button type=" submit" class="btn btn-primary">Buy</button>
-      </form>
+    </form>
+    {% else %}
+    <p>To purchase, please select an available store</p>
+
+    {% endif %}
   </div>
 </div>
+
+<script>
+  document.getElementById("store").addEventListener("change", function () {
+    console.log("hello");
+    document.getElementById("store-form").submit();
+  })
+</script>
 {% endblock %}

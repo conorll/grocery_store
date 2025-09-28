@@ -8,4 +8,4 @@ class PerStoreProduct(models.Model):
   quantity = models.PositiveIntegerField()
 
   def __str__(self):
-    return self.name
+    return f"{self.product.name} at {self.store.name} - {self.quantity} in stock"

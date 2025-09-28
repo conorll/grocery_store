@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import Product
 from .models import Store
+from .models import PerStoreProduct 
 from .forms import PostcodeForm, CustomUserCreationForm
 from .utils import geocode_postcode, haversine
 from django.http import HttpResponse
@@ -39,9 +40,55 @@ def products(request):
 
 def product(request, id):
     product_object = get_object_or_404(Product, id=id)
+
+    per_store_products = PerStoreProduct.objects.filter(
+            product_id=id
+        )
+    
+    
+    store_objects = Store.objects.all()
+
+    store_quantities = {}
+
+    for per_store_product in per_store_products:
+        store_quantities[per_store_product.store_id] = per_store_product.quantity
+
+    stores = []
+
+    for store in store_objects:
+        stores.append({
+            "id": store.id,
+            "name": store.name,
+            "quantity": store_quantities.get(store.id, -1),
+        })
+    
+    selected_store = None
+
+    selected_store_id = request.session.get("selected_store_id")
+    if (selected_store_id):
+        store = Store.objects.filter(id=selected_store_id).first()
+        selected_store = {
+            "id": store.id,
+            "name": store.name,
+            "quantity": store_quantities.get(store.id, -1),
+        }
+    
+    
     return render(
-        request, "grocery_store_app/product.html", {"product": product_object}
+        request, "grocery_store_app/product.html", 
+        {
+            "product": product_object,
+            "stores": stores,
+            "selected_store": selected_store
+         }
     )
+
+def product_select_store(request, id):
+    if request.method == "POST":
+        store_id = request.POST.get("store")
+        if store_id:
+            request.session["selected_store_id"] = int(store_id)
+        return redirect("product", id=id)
 
 
 def products(request):
