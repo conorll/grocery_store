@@ -13,6 +13,9 @@ urlpatterns = [
     path("product/<int:id>", views.product, name="product"),
     path("stores", views.stores, name="stores"),
     path("product/<int:id>/select_store", views.product_select_store, name="product_select_store"),
+    path("cart", views.cart, name="cart"),
+    path("update_cart", views.update_cart, name="update_cart"),
+    path("checkout_address", views.checkout_address, name="checkout_address"),
 
     #Client Management
     #Registration

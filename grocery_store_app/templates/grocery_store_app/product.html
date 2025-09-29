@@ -34,7 +34,8 @@
 
     {% if selected_store.quantity > 0 %}
 
-    <form class="mt-auto" action="{% url 'index' %}" method="GET">
+    <form class="mt-auto" action="" method="POST">
+      {% csrf_token %}
       <label class="form-label" for="quantity">Quantity</label>
       <input class="form-control my-2" type="number" id="quantity" name="quantity" min="1"
         max="{{ selected_store.quantity }}" value="1">
@@ -49,7 +50,6 @@
 
 <script>
   document.getElementById("store").addEventListener("change", function () {
-    console.log("hello");
     document.getElementById("store-form").submit();
   })
 </script>

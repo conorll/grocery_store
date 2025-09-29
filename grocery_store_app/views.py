@@ -73,6 +73,40 @@ def product(request, id):
             "quantity": store_quantities.get(store.id, -1),
         }
     
+    if request.method == "POST":
+        quantity_string = request.POST.get("quantity")
+        try:
+            quantity = int(quantity_string)
+        except():
+            return redirect("index")
+
+        if selected_store and 1 <= quantity <= selected_store["quantity"]:
+            shopping_cart = request.session.get("shopping_cart")
+
+            if shopping_cart is None:
+                shopping_cart = []
+
+            for item in shopping_cart:
+                if item["id"] == id:
+                    item["quantity"] += quantity
+                    item["total_price"] = str(item["quantity"] * product_object.price)
+                    break
+            else:
+                shopping_cart.append({
+                    "id": id,
+                    "name": product_object.name,
+                    "price": str(product_object.price),
+                    "category": product_object.category.name,
+                    "image_url": product_object.image_url,
+                    "quantity": quantity,
+                    "max_quantity": store_quantities.get(store.id, -1),
+                    "total_price": str(quantity * product_object.price)
+                })
+
+            request.session["shopping_cart"] = shopping_cart
+            return redirect("cart")
+
+    
     
     return render(
         request, "grocery_store_app/product.html", 
@@ -82,6 +116,61 @@ def product(request, id):
             "selected_store": selected_store
          }
     )
+
+def get_cart_total(shopping_cart):
+    total = 0.00
+
+    if shopping_cart is None:
+        shopping_cart = []
+    for item in shopping_cart:
+        print(item)
+        total += float(item["total_price"])
+    
+    return format(total, ".2f")
+
+def checkout_address(request):
+    return redirect("index")
+
+def update_cart(request):
+
+    if request.method == "POST":
+        id = int(request.POST.get("id"))
+        quantity = int(request.POST.get("quantity"))
+
+        product_object = get_object_or_404(Product, id=id)
+
+        shopping_cart = request.session.get("shopping_cart")
+
+        if shopping_cart is None:
+            shopping_cart = []
+        
+        for i, item in enumerate(shopping_cart):
+            if item["id"] == id:
+                if quantity == 0:
+                    del shopping_cart[i]
+                else:
+                    item["quantity"] = quantity
+                    item["total_price"] = str(quantity * product_object.price)
+                break
+        else:
+            return redirect("index")
+        
+        request.session["shopping_cart"] = shopping_cart
+        return redirect("cart")
+
+
+def cart(request):
+    shopping_cart = request.session.get("shopping_cart")
+
+    if shopping_cart is None:
+        shopping_cart = []
+
+
+    return render(request, "grocery_store_app/cart.html", {
+        "shopping_cart": shopping_cart,
+        "cart_total": get_cart_total(shopping_cart)
+    })
+
 
 def product_select_store(request, id):
     if request.method == "POST":
