@@ -129,7 +129,17 @@ def get_cart_total(shopping_cart):
     return format(total, ".2f")
 
 def checkout_address(request):
-    return redirect("index")
+    shopping_cart = request.session.get("shopping_cart")
+
+    if shopping_cart is None or len(shopping_cart) == 0:
+        return redirect("index")
+    
+    if not request.user.is_authenticated:
+        return redirect("index")
+
+    return render(
+        request, "grocery_store_app/checkout_address.html"
+    )
 
 def update_cart(request):
 
