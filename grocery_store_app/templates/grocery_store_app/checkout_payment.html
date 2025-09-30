@@ -1,0 +1,56 @@
+{% extends "grocery_store_app/layout.html" %}
+
+{% block body %}
+<div class="d-flex flex-column justify-content-center align-items-center">
+  <h1>Checkout Payment</h1>
+  <br>
+  <form class="row g-3" style="width: 50rem;" action="" method="POST">
+    {% csrf_token %}
+    <div class="col-md-12">
+      <label for="card-number" class="form-label">Card number</label>
+      <input required class="form-control" placeholder="0000000000000000" type="number" name="card-number"
+        id="card-number">
+    </div>
+    <div class="col-md-4">
+      <label for="expiration-month" class="form-label">Expiration Month</label>
+      <select required class="form-select" name="expiration-month" id="expiration-month">
+        <option value="" selected disabled>-</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+        <option value="11">11</option>
+        <option value="12">12</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="expiration-year" class="form-label">Expiration Year</label>
+      <select required class="form-select" name="expiration-year" id="expiration-year">
+        <option value="" selected disabled>-</option>
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+        <option value="2027">2027</option>
+        <option value="2028">2028</option>
+        <option value="2029">2029</option>
+        <option value="2030">2030</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="cvc" class="form-label">CVC</label>
+      <input required class="form-control" placeholder="000" type="number" name="cvc" id="cvc">
+    </div>
+    <div class="d-flex justify-content-center pt-4">
+      <button class="btn btn-primary" style="width: 20rem;">Place order</button>
+    </div>
+
+
+  </form>
+
+</div>
+{% endblock %}

@@ -1,45 +1,52 @@
 {% extends "grocery_store_app/layout.html" %}
 
 {% block body %}
-<form class="row g-3" action="" method="POST">
-  {% csrf_token %}
-  <div class="col-md-6">
-    <label for="first-name" class="form-label">First Name</label>
-    <input required class="form-control" type="text" name="first-name" id="first-name">
-  </div>
-  <div class="col-md-6">
-    <label for="last-name" class="form-label">Last Name</label>
-    <input required class="form-control" type="text" name="last-name" id="last-name">
-  </div>
-  <div class="col-md-12">
-    <label for="address" class="form-label">Address</label>
-    <input required class="form-control" type="text" name="address" id="address">
-  </div>
-  <div class="col-md-12">
-    <label for="address2" class="form-label">Address 2</label>
-    <input class="form-control" type="text" name="address2" id="address2">
-  </div>
-  <div class="col-md-6">
-    <label for="suburb" class="form-label">Suburb</label>
-    <input required class="form-control" type="text" name="suburb" id="suburb">
-  </div>
-  <div class="col-md-4">
-    <label for="state" class="form-label">State</label>
-    <select required class="form-select" name="state" id="state">
-      <option selected value="NSW">NSW</option>
-      <option value="VIC">VIC</option>
-      <option value="QLD">QLD</option>
-      <option value="WA">WA</option>
-      <option value="SA">SA</option>
-      <option value="TAS">TAS</option>
-    </select>
-  </div>
-  <div class="col-md-2">
-    <label for="postcode" class="form-label">Postcode</label>
-    <input required class="form-control" type="number" name="postcode" id="postcode">
-  </div>
+<div class="d-flex flex-column justify-content-center align-items-center">
+  <h1>Checkout Address</h1>
+  <br>
+  <form class="row g-3" style="width: 50rem;" action="" method="POST">
+    {% csrf_token %}
+    <div class="col-md-6">
+      <label for="first-name" class="form-label">First Name</label>
+      <input required class="form-control" type="text" name="first-name" id="first-name">
+    </div>
+    <div class="col-md-6">
+      <label for="last-name" class="form-label">Last Name</label>
+      <input required class="form-control" type="text" name="last-name" id="last-name">
+    </div>
+    <div class="col-md-12">
+      <label for="address" class="form-label">Address</label>
+      <input required class="form-control" type="text" name="address" id="address">
+    </div>
+    <div class="col-md-12">
+      <label for="address2" class="form-label">Address 2</label>
+      <input class="form-control" type="text" name="address2" id="address2">
+    </div>
+    <div class="col-md-6">
+      <label for="suburb" class="form-label">Suburb</label>
+      <input required class="form-control" type="text" name="suburb" id="suburb">
+    </div>
+    <div class="col-md-4">
+      <label for="state" class="form-label">State</label>
+      <select required class="form-select" name="state" id="state">
+        <option selected value="NSW">NSW</option>
+        <option value="VIC">VIC</option>
+        <option value="QLD">QLD</option>
+        <option value="WA">WA</option>
+        <option value="SA">SA</option>
+        <option value="TAS">TAS</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label for="postcode" class="form-label">Postcode</label>
+      <input required class="form-control" type="number" name="postcode" id="postcode">
+    </div>
+    <div class="d-flex justify-content-center pt-4">
+      <button class="btn btn-primary" style="width: 20rem;">Continue</button>
+    </div>
 
-  <button class="btn btn-primary">Continue</button>
 
-</form>
+  </form>
+
+</div>
 {% endblock %}

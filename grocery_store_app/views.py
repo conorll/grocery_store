@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product
 from .models import Store
 from .models import PerStoreProduct 
+from .models import Address 
 from .forms import PostcodeForm, CustomUserCreationForm
 from .utils import geocode_postcode, haversine
 from django.http import HttpResponse
@@ -137,8 +138,39 @@ def checkout_address(request):
     if not request.user.is_authenticated:
         return redirect("index")
 
+    if request.method == "POST":
+        first_name = request.POST.get("first-name")
+        last_name = request.POST.get("last-name")
+        form_address = request.POST.get("address")
+        form_address2 = request.POST.get("address2")
+        suburb = request.POST.get("suburb")
+        state = request.POST.get("state")
+        postcode = request.POST.get("postcode")
+
+        address = Address.objects.create(user=request.user, first_name = first_name, last_name = last_name, address = form_address, address2 = form_address2, suburb=suburb, postcode=postcode)
+
+        request.session["address_id"] = address.id
+        return redirect("checkout_payment")
+
     return render(
         request, "grocery_store_app/checkout_address.html"
+    )
+
+def checkout_payment(request):
+    shopping_cart = request.session.get("shopping_cart")
+    address_id = request.session.get("address_id")
+
+    if shopping_cart is None or len(shopping_cart) == 0:
+        return redirect("index")
+
+    if address_id is None:
+        return redirect("index")
+    
+    if not request.user.is_authenticated:
+        return redirect("index")
+
+    return render(
+        request, "grocery_store_app/checkout_payment.html"
     )
 
 def update_cart(request):
