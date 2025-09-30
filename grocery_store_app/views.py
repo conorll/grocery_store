@@ -28,18 +28,6 @@ def _dec(val):
     except (InvalidOperation, TypeError):
         return None
 
-
-def index(request):
-    return render(request, "grocery_store_app/index.html")
-
-
-def products(request):
-    product_objects = Product.objects.all()
-    return render(
-        request, "grocery_store_app/products.html", {"products": product_objects}
-    )
-
-
 def product(request, id):
     product_object = get_object_or_404(Product, id=id)
 
@@ -129,13 +117,11 @@ def get_cart_total(shopping_cart):
     
     return format(total, ".2f")
 
+@login_required
 def checkout_address(request):
     shopping_cart = request.session.get("shopping_cart")
 
     if shopping_cart is None or len(shopping_cart) == 0:
-        return redirect("index")
-    
-    if not request.user.is_authenticated:
         return redirect("index")
 
     if request.method == "POST":
@@ -155,6 +141,7 @@ def checkout_address(request):
         request, "grocery_store_app/checkout_address.html"
     )
 
+@login_required
 def checkout_payment(request):
     shopping_cart = request.session.get("shopping_cart")
     address_id = request.session.get("address_id")
@@ -163,9 +150,6 @@ def checkout_payment(request):
         return redirect("index")
 
     if address_id is None:
-        return redirect("index")
-    
-    if not request.user.is_authenticated:
         return redirect("index")
 
     if request.method == "POST":
@@ -188,6 +172,7 @@ def confirm(request):
         request, "grocery_store_app/confirm.html"
     )
 
+@login_required
 def update_cart(request):
 
     if request.method == "POST":
@@ -215,7 +200,7 @@ def update_cart(request):
         request.session["shopping_cart"] = shopping_cart
         return redirect("cart")
 
-
+@login_required
 def cart(request):
     shopping_cart = request.session.get("shopping_cart")
 
