@@ -7,7 +7,7 @@ class Address(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)
   first_name = models.CharField(max_length=50)
   last_name = models.CharField(max_length=50)
-  address1 = models.CharField(max_length=100)
+  address = models.CharField(max_length=100)
   address2 = models.CharField(max_length=100)
   suburb = models.CharField(max_length=50)
   state = models.CharField(max_length=50)
