@@ -4,6 +4,7 @@ from .models import Product
 from .models import Store
 from .models import PerStoreProduct 
 from .models import Address 
+from .models import Payment 
 from .forms import PostcodeForm, CustomUserCreationForm
 from .utils import geocode_postcode, haversine
 from django.http import HttpResponse
@@ -124,7 +125,6 @@ def get_cart_total(shopping_cart):
     if shopping_cart is None:
         shopping_cart = []
     for item in shopping_cart:
-        print(item)
         total += float(item["total_price"])
     
     return format(total, ".2f")
@@ -144,7 +144,6 @@ def checkout_address(request):
         form_address = request.POST.get("address")
         form_address2 = request.POST.get("address2")
         suburb = request.POST.get("suburb")
-        state = request.POST.get("state")
         postcode = request.POST.get("postcode")
 
         address = Address.objects.create(user=request.user, first_name = first_name, last_name = last_name, address = form_address, address2 = form_address2, suburb=suburb, postcode=postcode)
@@ -169,8 +168,24 @@ def checkout_payment(request):
     if not request.user.is_authenticated:
         return redirect("index")
 
+    if request.method == "POST":
+        card_number = request.POST.get("card-number")
+        expiration_month = request.POST.get("expiration-month")
+        expiration_year = request.POST.get("expiration-year")
+        cvc = request.POST.get("cvc")
+
+        payment = Payment.objects.create(user=request.user, card_number=card_number, expiration_month=expiration_month, expiration_year=expiration_year, cvc=cvc)
+
+        request.session["payment_id"] = payment.id
+        return redirect("confirm")
+
     return render(
         request, "grocery_store_app/checkout_payment.html"
+    )
+
+def confirm(request):
+    return render(
+        request, "grocery_store_app/confirm.html"
     )
 
 def update_cart(request):
