@@ -3,7 +3,7 @@ import math
 import logging
 from typing import Tuple
 from django.db.models import Q, Exists, OuterRef
-from grocery_store_app.models import PerStoreProduct
+from django.apps import apps
 
 API_KEY = "68b3c071edb8e216867405vxhafdb0c"  # Geocode.maps.co free API key
 
@@ -62,6 +62,8 @@ def apply_product_filters(qs, params):
       - price_min, price_max: numeric
       - in_stock: "1" to require any store stock > 0
     """
+    # lazy model lookup to avoid circular imports during app load
+    PerStoreProduct = apps.get_model("grocery_store_app", "PerStoreProduct")
     # Search
     q = (params.get("q") or "").strip()
     if q:
