@@ -147,6 +147,61 @@ def confirm(request):
         request, "grocery_store_app/confirm.html"
     )
 
+def update_cart(cart, per_store_product, quantity):
+    if quantity < 0:
+        raise Exception(f"Purchase quantity cannot be negative")
+
+    if quantity > per_store_product.quantity:
+        raise Exception(f"Purchase quantity must be less than or equal to the available quantity: {per_store_product.quantity}")
+
+    if quantity == 0:
+        try:
+            entry = CartEntry.objects.get(
+                cart=cart,
+                per_store_product=per_store_product,
+            )
+            entry.delete()
+            return
+        except:
+            return
+
+    entry, created = CartEntry.objects.get_or_create(
+        cart=cart,
+        per_store_product=per_store_product,
+        defaults={"quantity": quantity}
+    )
+
+    if not created:
+        entry.quantity = quantity
+        entry.save()
+
+@login_required
+def add_cart(request):
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        product_id = int(request.POST.get("id"))
+        store_id = int(request.session.get("selected_store_id"))
+
+        quantity = int(request.POST.get("quantity"))
+
+        per_store_product = get_object_or_404(PerStoreProduct, product_id=product_id, store_id=store_id)
+
+        entry, _ = CartEntry.objects.get_or_create(
+            cart=cart,
+            per_store_product=per_store_product,
+            defaults={"quantity": 0}
+        )
+
+        try:
+            update_cart(cart, per_store_product, entry.quantity + quantity)
+        except Exception as e:
+            messages.error(request, str(e))
+            return redirect("product", id=product_id)
+
+    return redirect("cart")
+
+
 @login_required
 def cart(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -154,30 +209,16 @@ def cart(request):
     if request.method == "POST":
         product_id = int(request.POST.get("id"))
         store_id = int(request.session.get("selected_store_id"))
+
         quantity = int(request.POST.get("quantity"))
 
         per_store_product = get_object_or_404(PerStoreProduct, product_id=product_id, store_id=store_id)
 
-        if quantity == 0:
-            try:
-                entry = CartEntry.objects.get(
-                    cart=cart,
-                    per_store_product=per_store_product,
-                )
-                entry.delete()
-                return redirect("cart")
-            except:
-                return redirect("cart")
+        try:
+            update_cart(cart, per_store_product, quantity)
+        except Exception as e:
+            messages.error(request, str(e))
 
-        entry, created = CartEntry.objects.get_or_create(
-            cart=cart,
-            per_store_product=per_store_product,
-            defaults={"quantity": quantity}
-        )
-
-        if not created:
-            entry.quantity = quantity
-            entry.save()
         return redirect("cart")
     
     entries = cart.cart_entries.select_related("per_store_product")
@@ -199,7 +240,7 @@ def cart(request):
         "cart_total": cart_total
     })
 
-
+@login_required
 def product_select_store(request, id):
 
     if request.method == "POST":
