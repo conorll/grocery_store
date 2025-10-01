@@ -34,10 +34,11 @@
 
     {% if selected_store.quantity > 0 %}
 
-    <form class="mt-auto" action="" method="POST">
+    <form class="mt-auto" action="{% url 'cart' %}" method="POST">
       {% csrf_token %}
+      <input type="hidden" name="id" value="{{ product.id }}">
       <label class="form-label" for="quantity">Quantity</label>
-      <input class="form-control my-2" type="number" id="quantity" name="quantity" min="1"
+      <input required class="form-control my-2" type="number" id="quantity" name="quantity" min="1"
         max="{{ selected_store.quantity }}" value="1">
       <button type=" submit" class="btn btn-primary">Buy</button>
     </form>

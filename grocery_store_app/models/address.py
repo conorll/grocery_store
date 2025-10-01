@@ -14,4 +14,4 @@ class Address(models.Model):
   postcode = models.PositiveIntegerField()
 
   def __str__(self):
-    return f"{self.first_name} {self.last_name} - {self.address1}"
+    return f"{self.first_name} {self.last_name} - {self.address}"

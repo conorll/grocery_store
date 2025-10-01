@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import Product
+from .models import Cart , CartEntry
 from .models import Store
 from .models import PerStoreProduct 
 from .models import Address 
@@ -63,41 +64,6 @@ def product(request, id):
             "quantity": store_quantities.get(store.id, -1),
         }
     
-    if request.method == "POST":
-        quantity_string = request.POST.get("quantity")
-        try:
-            quantity = int(quantity_string)
-        except():
-            return redirect("index")
-
-        if selected_store and 1 <= quantity <= selected_store["quantity"]:
-            shopping_cart = request.session.get("shopping_cart")
-
-            if shopping_cart is None:
-                shopping_cart = []
-
-            for item in shopping_cart:
-                if item["id"] == id:
-                    item["quantity"] += quantity
-                    item["total_price"] = str(item["quantity"] * product_object.price)
-                    break
-            else:
-                shopping_cart.append({
-                    "id": id,
-                    "name": product_object.name,
-                    "price": str(product_object.price),
-                    "category": product_object.category.name,
-                    "image_url": product_object.image_url,
-                    "quantity": quantity,
-                    "max_quantity": store_quantities.get(store.id, -1),
-                    "total_price": str(quantity * product_object.price)
-                })
-
-            request.session["shopping_cart"] = shopping_cart
-            return redirect("cart")
-
-    
-    
     return render(
         request, "grocery_store_app/product.html", 
         {
@@ -107,21 +73,13 @@ def product(request, id):
          }
     )
 
-def get_cart_total(shopping_cart):
-    total = 0.00
-
-    if shopping_cart is None:
-        shopping_cart = []
-    for item in shopping_cart:
-        total += float(item["total_price"])
-    
-    return format(total, ".2f")
-
 @login_required
 def checkout_address(request):
-    shopping_cart = request.session.get("shopping_cart")
 
-    if shopping_cart is None or len(shopping_cart) == 0:
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    entries = cart.cart_entries.select_related()
+
+    if len(entries) == 0:
         return redirect("index")
 
     if request.method == "POST":
@@ -132,9 +90,13 @@ def checkout_address(request):
         suburb = request.POST.get("suburb")
         postcode = request.POST.get("postcode")
 
+        try:
+            address = Address.objects.get(user=request.user)
+            address.delete()
+        except:
+            print("")
         address = Address.objects.create(user=request.user, first_name = first_name, last_name = last_name, address = form_address, address2 = form_address2, suburb=suburb, postcode=postcode)
 
-        request.session["address_id"] = address.id
         return redirect("checkout_payment")
 
     return render(
@@ -143,14 +105,17 @@ def checkout_address(request):
 
 @login_required
 def checkout_payment(request):
-    shopping_cart = request.session.get("shopping_cart")
-    address_id = request.session.get("address_id")
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    entries = cart.cart_entries.select_related()
 
-    if shopping_cart is None or len(shopping_cart) == 0:
+    if len(entries) == 0:
         return redirect("index")
 
-    if address_id is None:
+    try:
+        address = Address.objects.get(user=request.user)
+    except:
         return redirect("index")
+
 
     if request.method == "POST":
         card_number = request.POST.get("card-number")
@@ -158,9 +123,19 @@ def checkout_payment(request):
         expiration_year = request.POST.get("expiration-year")
         cvc = request.POST.get("cvc")
 
+        try:
+            payment = Payment.objects.get(user=request.user)
+            payment.delete()
+        except:
+            print("")
         payment = Payment.objects.create(user=request.user, card_number=card_number, expiration_month=expiration_month, expiration_year=expiration_year, cvc=cvc)
 
-        request.session["payment_id"] = payment.id
+        for entry in entries:
+            entry.per_store_product.quantity -= entry.quantity
+            entry.per_store_product.save()
+
+        cart.cart_entries.all().delete()
+
         return redirect("confirm")
 
     return render(
@@ -173,52 +148,69 @@ def confirm(request):
     )
 
 @login_required
-def update_cart(request):
+def cart(request):
+    cart, _ = Cart.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
-        id = int(request.POST.get("id"))
+        product_id = int(request.POST.get("id"))
+        store_id = int(request.session.get("selected_store_id"))
         quantity = int(request.POST.get("quantity"))
 
-        product_object = get_object_or_404(Product, id=id)
+        per_store_product = get_object_or_404(PerStoreProduct, product_id=product_id, store_id=store_id)
 
-        shopping_cart = request.session.get("shopping_cart")
+        if quantity == 0:
+            try:
+                entry = CartEntry.objects.get(
+                    cart=cart,
+                    per_store_product=per_store_product,
+                )
+                entry.delete()
+                return redirect("cart")
+            except:
+                return redirect("cart")
 
-        if shopping_cart is None:
-            shopping_cart = []
-        
-        for i, item in enumerate(shopping_cart):
-            if item["id"] == id:
-                if quantity == 0:
-                    del shopping_cart[i]
-                else:
-                    item["quantity"] = quantity
-                    item["total_price"] = str(quantity * product_object.price)
-                break
-        else:
-            return redirect("index")
-        
-        request.session["shopping_cart"] = shopping_cart
+        entry, created = CartEntry.objects.get_or_create(
+            cart=cart,
+            per_store_product=per_store_product,
+            defaults={"quantity": quantity}
+        )
+
+        if not created:
+            entry.quantity = quantity
+            entry.save()
         return redirect("cart")
+    
+    entries = cart.cart_entries.select_related("per_store_product")
+    
+    entry_list = []
+    cart_total = 0
 
-@login_required
-def cart(request):
-    shopping_cart = request.session.get("shopping_cart")
-
-    if shopping_cart is None:
-        shopping_cart = []
-
+    for entry in entries:
+        item_total = entry.per_store_product.product.price * entry.quantity
+        cart_total += item_total
+        entry_list.append({
+            "per_store_product": entry.per_store_product,
+            "quantity": entry.quantity,
+            "item_total": item_total,
+        })
 
     return render(request, "grocery_store_app/cart.html", {
-        "shopping_cart": shopping_cart,
-        "cart_total": get_cart_total(shopping_cart)
+        "cart": entry_list,
+        "cart_total": cart_total
     })
 
 
 def product_select_store(request, id):
+
     if request.method == "POST":
         store_id = request.POST.get("store")
         if store_id:
             request.session["selected_store_id"] = int(store_id)
+
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        cart.cart_entries.all().delete()
+
         return redirect("product", id=id)
 
 

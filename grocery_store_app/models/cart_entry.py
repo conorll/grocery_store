@@ -1,6 +1,6 @@
 from django.db import models
 from .cart import Cart 
-from .product import Cart 
+from .product import Product 
 from .per_store_product import PerStoreProduct 
 
 class CartEntry(models.Model):
@@ -9,4 +9,4 @@ class CartEntry(models.Model):
   quantity = models.PositiveIntegerField()
 
   def __str__(self):
-    return f"{self.per_store_product.product.name} in cart for user {self.user.first_name} {self.user.last_name}"
+    return f"{self.per_store_product.product.name} in cart for user {self.cart.user.first_name} {self.cart.user.last_name}"

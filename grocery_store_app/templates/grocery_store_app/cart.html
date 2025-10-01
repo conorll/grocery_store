@@ -2,43 +2,44 @@
 
 {% block body %}
 <div class="d-flex justify-content-center">
-  {% for product in shopping_cart %}
+  {% for entry in cart %}
   <div class="card mb-3" style="width: 540px;">
     <div class="row align-items-center">
       <div class="col-md-4">
-        <img src="{{ product.image_url }}" alt="{{ product.name }}" style="width: 200px;">
+        <img src="{{ entry.per_store_product.product.image_url }}" alt="{{ entry.per_store_product.product.name }}"
+          style="width: 200px;">
         <img src="" alt="">
       </div>
       <div class="col-md-4">
         <div class="card-body">
-          <h5 class="card-title">{{ product.name }}</h5>
-          <p class="card-text">${{ product.price }}</p>
+          <h5 class="card-title">{{ entry.per_store_product.product.name }}</h5>
+          <p class="card-text">${{ entry.per_store_product.product.price }}</p>
         </div>
       </div>
       <div class="col-md-4">
-        <form class="mt-auto" id="quantity-form" action="{% url 'update_cart' %}" method="POST">
+        <form class="mt-auto" id="quantity-form" action="{% url 'cart' %}" method="POST">
           {% csrf_token %}
-          <input type="hidden" name="id" value="{{ product.id }}">
+          <input type="hidden" name="id" value="{{ entry.per_store_product.product.id }}">
           <label class="form-label" for="quantity">Quantity</label>
           <input class="form-control my-2" type="number" id="quantity" name="quantity" min="1"
-            max="{{ product.max_quantity }}" value="{{ product.quantity }}">
+            max="{{ entry.per_store_product.quantity }}" value="{{ entry.quantity }}">
         </form>
-        <form class="mt-auto" action="{% url 'update_cart' %}" method="POST">
+        <form class="mt-auto" action="{% url 'cart' %}" method="POST">
           {% csrf_token %}
-          <input type="hidden" id="id" name="id" value="{{ product.id }}">
+          <input type="hidden" id="id" name="id" value="{{ entry.per_store_product.product.id }}">
           <input type="hidden" id="remove-quantity" name="quantity" value="0">
           <button type=" submit" class="btn btn-danger">Remove</button>
         </form>
       </div>
       <div class="col-md-4">
-        <p>Product total: ${{ product.total_price }} </p>
+        <p>Product total: ${{ entry.item_total }} </p>
       </div>
     </div>
   </div>
   {% endfor %}
 </div>
 <div class="d-flex align-items-center gap-5">
-  <p class="ms-auto">Cart total ${{ cart_total}} </p>
+  <p class="ms-auto">Cart total ${{ cart_total }} </p>
   <a href="{% url 'checkout_address' %}" class="btn btn-primary">Checkout</a>
 </div>
 
