@@ -122,14 +122,14 @@ class OrderCreationTests(TestCase):
             longitude=0
         )
 
-        # Create product WITHOUT quantity
+        # Create product without quantity
         self.product = Product.objects.create(
             name="Test Product",
             price=Decimal("10.00"),
-            category=None  # or your default category
+            category=None  
         )
 
-        # Now create PerStoreProduct with quantity
+        # Create PerStoreProduct with quantity
         self.per_store_product = PerStoreProduct.objects.create(
             product=self.product,
             store=self.store,

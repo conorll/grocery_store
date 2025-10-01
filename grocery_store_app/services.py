@@ -22,7 +22,7 @@ def create_order_from_cart(user):
     total = Decimal(0)
     for entry in entries:
         total += entry.quantity * entry.per_store_product.product.price
-        
+
     # Create the order
     order = Order.objects.create(
         user=user,
@@ -45,6 +45,7 @@ def create_order_from_cart(user):
         OrderItem.objects.create(
             order=order,
             product=product,
+            per_store_product=per_store_product,
             quantity=entry.quantity,
             price=product.price  # assuming static price at time of order
         )

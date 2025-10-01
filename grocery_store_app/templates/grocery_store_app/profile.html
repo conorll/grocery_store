@@ -14,7 +14,7 @@
           <h4 class="mb-0">Active Orders</h4>
         </div>
         
-        <div class="card-body">
+        <div class="card-body" style="max-height: 300px; overflow-y: auto;">
     
           {% if active_orders %}
             {% for order in active_orders %}
@@ -22,7 +22,13 @@
                 <div class="row">
                   <div class="col-8">
                     <strong><a href="{% url 'order_detail' order.id %}">Order #{{ order.id }}</a></strong></br>
-                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }} </br>
+                    {% if order.items.first.per_store_product %}
+                      Fulfilled by: {{ order.items.first.per_store_product.store.name }}
+                    {% else %}
+                      Fulfilled by: Unknown
+                    {% endif %}
+                    </small>
                   </div>
                   <div class="col-4 text-end">
                     <span class="badge bg-warning">${{ order.total }}</span>
@@ -45,7 +51,7 @@
           <h4 class="mb-0">Past Orders</h4>
         </div>
         
-        <div class="card-body">
+        <div class="card-body" style="max-height: 300px; overflow-y: auto;">
 
           {% if past_orders %}
             {% for order in past_orders|slice:":5" %}
@@ -53,7 +59,13 @@
                 <div class="row">
                   <div class="col-8">
                     <strong><a href="{% url 'order_detail' order.id %}">Order #{{ order.id }}</a></strong></br>
-                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }}
+                    {% if order.items.first.per_store_product %}
+                      Fulfilled by: {{ order.items.first.per_store_product.store.name }}
+                    {% else %}
+                      Fulfilled by: Unknown
+                    {% endif %}
+                    </small>
                   </div>
                   <div class="col-4 text-end">
                     <span class="badge bg-success">${{ order.total }}</span>
