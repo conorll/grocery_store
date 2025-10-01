@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from decimal import Decimal
+from .address import Address
+from .payment import Payment
 
 class Order(models.Model):
     STATUS_CHOICES = [
@@ -10,6 +12,8 @@ class Order(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
+    payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
     total = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -21,7 +21,7 @@
               <div class="border-bottom pb-2 mb-2">
                 <div class="row">
                   <div class="col-8">
-                    <strong>Order #{{ order.id }}</strong><br>
+                    <strong><a href="{% url 'order_detail' order.id %}">Order #{{ order.id }}</a></strong></br>
                     <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
                   </div>
                   <div class="col-4 text-end">

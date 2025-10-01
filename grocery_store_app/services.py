@@ -17,13 +17,19 @@ def create_order_from_cart(user):
         payment = Payment.objects.get(user=user)
     except (Address.DoesNotExist, Payment.DoesNotExist):
         return None
-
+    
+    # Calculate total
+    total = Decimal(0)
+    for entry in entries:
+        total += entry.quantity * entry.per_store_product.product.price
+        
     # Create the order
     order = Order.objects.create(
         user=user,
         address=address,
         payment=payment,
-        status='active'
+        status='active',
+        total=total,
     )
 
     # Create order items from cart entries

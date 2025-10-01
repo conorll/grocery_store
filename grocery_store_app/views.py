@@ -18,7 +18,7 @@ from django.contrib.auth import login
 from django.db.models import Q
 from django.core.paginator import Paginator
 from urllib.parse import urlencode
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 # Create your views here.
 
@@ -450,9 +450,13 @@ def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     items = order.items.all()  # using related_name='items'
     
+    def rounded(value):
+        return value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    
     subtotal = sum(item.subtotal() for item in items)
-    gst = subtotal * Decimal('0.10')
-    total = subtotal + gst
+    subtotal = rounded(subtotal)
+    gst = rounded(subtotal * Decimal('0.10'))
+    total = rounded(subtotal + gst)
 
     return render(request, 'grocery_store_app/order_detail.html', {
         'order': order,

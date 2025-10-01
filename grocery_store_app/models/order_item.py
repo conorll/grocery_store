@@ -11,5 +11,8 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.quantity} × {self.product.name} (Order #{self.order.id})"
 
+    def subtotal(self):
+        return self.quantity * self.price
+    
     def total_price(self):
         return self.quantity * self.price
