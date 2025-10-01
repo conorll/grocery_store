@@ -1,10 +1,8 @@
-# grocery_store_app/tests.py
 from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import Category, Product, PerStoreProduct, Store, Cart, Address, Payment
-from .services import create_order_from_cart
+from grocery_store_app.models import Category, Product, PerStoreProduct, Store, Cart, Address, Payment
 
 class ProductViewTests(TestCase):
     @classmethod
