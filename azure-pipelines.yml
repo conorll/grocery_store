@@ -4,7 +4,11 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-  - feat-inventory-management
+  branches:
+    include:
+    - feat-inventory-management
+    exclude:
+    - '*'
 
 pool:
   name: mypool
