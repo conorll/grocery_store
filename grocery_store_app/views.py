@@ -253,6 +253,7 @@ def product_select_store(request, id):
         cart.cart_entries.all().delete()
 
         return redirect("product", id=id)
+    return redirect("product", id=id)
 
 
 def products(request):
