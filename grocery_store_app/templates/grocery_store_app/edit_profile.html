@@ -1,0 +1,135 @@
+{% extends "grocery_store_app/layout.html" %}
+
+{% block title %}Edit Profile - Grocery Store{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Edit Personal Details</h4>
+        </div>
+        
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" 
+                       value="{{ user.username }}" required>
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" 
+                       value="{{ user.email }}" required>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="first_name" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" 
+                       value="{{ user.first_name }}">
+              </div>
+              <div class="col-md-6">
+                <label for="last_name" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" 
+                       value="{{ user.last_name }}">
+              </div>
+            </div>
+            
+            <!-- Password Change Section -->
+            <hr class="my-4">
+            <h5 class="mb-3">Change Password (Optional)</h5>
+            
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label for="current_password" class="form-label">Current Password</label>
+                <input type="password" class="form-control" id="current_password" name="current_password">
+                <small class="form-text text-muted">Leave blank if you don't want to change your password</small>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="new_password1" class="form-label">New Password</label>
+                <input type="password" class="form-control" id="new_password1" name="new_password1">
+              </div>
+              <div class="col-md-6">
+                <label for="new_password2" class="form-label">Confirm New Password</label>
+                <input type="password" class="form-control" id="new_password2" name="new_password2">
+              </div>
+            </div>
+            
+            <!-- Display form errors if any -->
+            {% if form.errors %}
+              <div class="alert alert-danger">
+                {% for field, errors in form.errors.items %}
+                  {% for error in errors %}
+                    <div>{{ field }}: {{ error }}</div>
+                  {% endfor %}
+                {% endfor %}
+              </div>
+            {% endif %}
+            
+            <!-- Display success message -->
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+            
+            <div class="card-footer text-center">
+              <button type="submit" class="btn btn-success me-2">
+                <i class="fas fa-save"></i> Save Changes
+              </button>
+              <a href="{% url 'profile' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for password validation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPassword = document.getElementById('current_password');
+    const newPassword1 = document.getElementById('new_password1');
+    const newPassword2 = document.getElementById('new_password2');
+    
+    function validatePasswords() {
+        if (newPassword1.value || newPassword2.value) {
+            if (!currentPassword.value) {
+                currentPassword.setCustomValidity('Current password is required to change password');
+            } else {
+                currentPassword.setCustomValidity('');
+            }
+            
+            if (newPassword1.value !== newPassword2.value) {
+                newPassword2.setCustomValidity('New passwords do not match');
+            } else {
+                newPassword2.setCustomValidity('');
+            }
+        } else {
+            currentPassword.setCustomValidity('');
+            newPassword2.setCustomValidity('');
+        }
+    }
+    
+    currentPassword.addEventListener('input', validatePasswords);
+    newPassword1.addEventListener('input', validatePasswords);
+    newPassword2.addEventListener('input', validatePasswords);
+});
+</script>
+
+{% endblock %}
