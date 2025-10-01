@@ -1,8 +1,7 @@
-# grocery_store_app/tests.py
 from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
-from .models import Category, Product
+from grocery_store_app.models import Category, Product
 
 
 class ProductViewTests(TestCase):
