@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-# from .models.users import CustomUser
+# from django.contrib.auth.models import User
+from .models.users import CustomUser
 from .models.store import Store
 
 # Form for user to input postcode to find closest store
@@ -22,12 +22,12 @@ class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
+        if CustomUser.objects.filter(email=email).exists():
             raise forms.ValidationError("This email address is already registered.")
         return email
     
@@ -56,7 +56,7 @@ class CustomStaffCreationForm(CustomUserCreationForm):
     store = forms.ModelChoiceField(queryset=Store.objects.all(), required=True)
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ('username', 'first_name', 'last_name', 'email', 'store', 'password1', 'password2')
 
     def save(self, commit=True):
@@ -64,7 +64,6 @@ class CustomStaffCreationForm(CustomUserCreationForm):
         user.email = self.cleaned_data['email']
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
-        user.store = self.changed_data['store']
         if commit:
             user.save()
         return user

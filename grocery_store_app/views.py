@@ -6,7 +6,7 @@ from .models import Store
 from .models import PerStoreProduct 
 from .models import Address 
 from .models import Payment 
-from .forms import PostcodeForm, CustomUserCreationForm
+from .forms import PostcodeForm, CustomUserCreationForm, CustomStaffCreationForm
 from .utils import geocode_postcode, haversine
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
