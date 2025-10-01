@@ -4,9 +4,87 @@
 
 {% block body %}
 <div class="container mt-4">
-  <div class="row justify-content-center">
+  <div class="row">
+    <!-- Left Column - Orders -->
     <div class="col-md-6">
+      <!-- Active Orders Section -->
+      <div class="card shadow mb-4">
+        <div class="card-header bg-warning text-dark">
+          <h4 class="mb-0">Active Orders</h4>
+        </div>
+        
+        <div class="card-body">
+          {% comment %}
+          <!-- This will need to be implemented when Order model is created -->
+          {% if user.orders.filter(status='active').exists %}
+            {% for order in user.orders.filter(status='active') %}
+              <div class="border-bottom pb-2 mb-2">
+                <div class="row">
+                  <div class="col-8">
+                    <strong>Order #{{ order.id }}</strong><br>
+                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                  </div>
+                  <div class="col-4 text-end">
+                    <span class="badge bg-warning">${{ order.total }}</span>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+          {% endcomment %}
+            <div class="text-center text-muted">
+              <p>No active orders</p>
+              <a href="{% url 'products' %}" class="btn btn-outline-warning">Start Shopping</a>
+            </div>
+          {% comment %}
+          {% endif %}
+          {% endcomment %}
+        </div>
+      </div>
+
+      <!-- Past Orders Section -->
       <div class="card shadow">
+        <div class="card-header bg-secondary text-white">
+          <h4 class="mb-0">Past Orders</h4>
+        </div>
+        
+        <div class="card-body">
+          {% comment %}
+          <!-- This will need to be implemented when Order model is created -->
+          {% if user.orders.filter(status='completed').exists %}
+            {% for order in user.orders.filter(status='completed')|slice:":5" %}
+              <div class="border-bottom pb-2 mb-2">
+                <div class="row">
+                  <div class="col-8">
+                    <strong>Order #{{ order.id }}</strong><br>
+                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                  </div>
+                  <div class="col-4 text-end">
+                    <span class="badge bg-success">${{ order.total }}</span>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+            <div class="text-center mt-3">
+              <a href="#" class="btn btn-outline-secondary btn-sm">View All Orders</a>
+            </div>
+          {% else %}
+          {% endcomment %}
+            <div class="text-center text-muted">
+              <p>No past orders</p>
+              <small>Your completed orders will appear here</small>
+            </div>
+          {% comment %}
+          {% endif %}
+          {% endcomment %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Profile & Payment -->
+    <div class="col-md-6">
+      <!-- User Profile Section -->
+      <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white">
           <h4 class="mb-0">User Profile</h4>
         </div>
@@ -39,11 +117,59 @@
         </div>
         
         <div class="card-footer text-center">
+          <a href="{% url 'edit_profile' %}" class="btn btn-primary me-2">
+            Edit Personal Details
+          </a>
           <a href="{% url 'logout' %}" class="btn btn-danger" 
              onclick="return confirm('Are you sure you want to log out?')">
             Logout
           </a>
         </div>
+      </div>
+
+      <!-- Payment Details Section -->
+      <div class="card shadow">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">Payment Details</h4>
+        </div>
+        
+        <div class="card-body">
+          {% if user.payment_set.first %}
+            {% with payment=user.payment_set.first %}
+              <div class="row mb-3">
+                <div class="col-4"><strong>Card Number:</strong></div>
+                <div class="col-8">**** **** **** {{ payment.card_number|stringformat:"s"|slice:"-4:" }}</div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-4"><strong>Expiration:</strong></div>
+                <div class="col-8">{{ payment.expiration_month|stringformat:"02d" }}/{{ payment.expiration_year }}</div>
+              </div>
+              
+              <div class="row">
+                <div class="col-4"><strong>CVC:</strong></div>
+                <div class="col-8">***</div>
+              </div>
+            {% endwith %}
+          {% else %}
+            <div class="text-center text-muted">
+              <p>No payment method on file</p>
+              <a href="#" class="btn btn-outline-success">Add Payment Method</a>
+            </div>
+          {% endif %}
+        </div>
+        
+        {% if user.payment_set.first %}
+        <div class="card-footer text-center">
+          <a href="#" class="btn btn-warning me-2">
+            Edit Payment Details
+          </a>
+          <a href="#" class="btn btn-danger" 
+             onclick="return confirm('Are you sure you want to remove this payment method?')">
+            Remove Payment Method
+          </a>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>

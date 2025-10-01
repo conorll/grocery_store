@@ -373,3 +373,62 @@ def authView(request):
 @login_required
 def profile(request):
     return render(request, "grocery_store_app/profile.html", {"user": request.user})
+
+# Edit Profile View
+@login_required
+def edit_profile(request):
+    if request.method == "POST":
+        user = request.user
+        
+        # Update basic user information
+        user.username = request.POST.get("username", user.username)
+        user.email = request.POST.get("email", user.email)
+        user.first_name = request.POST.get("first_name", user.first_name)
+        user.last_name = request.POST.get("last_name", user.last_name)
+        
+        # Handle password change
+        current_password = request.POST.get("current_password")
+        new_password1 = request.POST.get("new_password1")
+        new_password2 = request.POST.get("new_password2")
+        
+        errors = []
+        
+        # Validate email uniqueness
+        from django.contrib.auth.models import User
+        if User.objects.filter(email=user.email).exclude(id=user.id).exists():
+            errors.append("This email address is already in use.")
+        
+        # Validate username uniqueness
+        if User.objects.filter(username=user.username).exclude(id=user.id).exists():
+            errors.append("This username is already in use.")
+        
+        # Validate password change if provided
+        if current_password or new_password1 or new_password2:
+            if not current_password:
+                errors.append("Current password is required to change password.")
+            elif not user.check_password(current_password):
+                errors.append("Current password is incorrect.")
+            elif new_password1 != new_password2:
+                errors.append("New passwords do not match.")
+            elif len(new_password1) < 8:
+                errors.append("New password must be at least 8 characters long.")
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            # Save user changes
+            user.save()
+            
+            # Change password if provided
+            if new_password1:
+                user.set_password(new_password1)
+                user.save()
+                # Keep user logged in after password change
+                from django.contrib.auth import update_session_auth_hash
+                update_session_auth_hash(request, user)
+            
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect("profile")
+    
+    return render(request, "grocery_store_app/edit_profile.html", {"user": request.user})
