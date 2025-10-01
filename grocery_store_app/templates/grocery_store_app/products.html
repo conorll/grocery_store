@@ -1,32 +1,75 @@
 {% extends "grocery_store_app/layout.html" %}
 
 {% block body %}
-<h2>Products</h2>
+<style>
+  /* Small visual polish */
+  .card img { object-fit: cover; height: 160px; }
+  .badge { margin-right: .25rem; }
+</style>
+
+<h2 class="mb-3">Products</h2>
 
 <!-- Filter form -->
-<form method="get" class="row g-3 mb-4">
+<form method="get" class="row g-3 mb-3">
+  <!-- Search -->
   <div class="col-md-3">
-    <input type="text" name="q" class="form-control" placeholder="Search…" value="{{ query }}">
+    <label class="form-label mb-1" for="searchInput">Search</label>
+    <input id="searchInput" type="search" name="q" class="form-control"
+           placeholder="e.g. apple, bread…" value="{{ query }}" autofocus>
+  </div>
+
+  <!-- Price: min/max -->
+  <div class="col-md-2">
+    <label class="form-label mb-1" for="minPrice">Min</label>
+    <input id="minPrice" type="number" name="price_min" step="0.01" min="0"
+           class="form-control" placeholder="e.g. 2.50" value="{{ min_price }}">
   </div>
   <div class="col-md-2">
-    <input type="text" name="min_price" class="form-control" placeholder="Min price" value="{{ min_price }}">
+    <label class="form-label mb-1" for="maxPrice">Max</label>
+    <input id="maxPrice" type="number" name="price_max" step="0.01" min="0"
+           class="form-control" placeholder="e.g. 7.00" value="{{ max_price }}">
+    <div class="form-text">Tip: leave blank to ignore.</div>
   </div>
+
+  <!-- Category -->
   <div class="col-md-2">
-    <input type="text" name="max_price" class="form-control" placeholder="Max price" value="{{ max_price }}">
+    <label class="form-label mb-1" for="catSel">Category</label>
+    <select id="catSel" name="category" class="form-select">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat.name }}" {% if selected_category == cat.name %}selected{% endif %}>
+          {{ cat.name }}
+        </option>
+      {% endfor %}
+    </select>
   </div>
+
+  <!-- In stock -->
+  <div class="col-md-1 d-flex align-items-end">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="1"
+             id="inStockCheck" name="in_stock" {% if in_stock %}checked{% endif %}>
+      <label class="form-check-label" for="inStockCheck">In stock</label>
+    </div>
+  </div>
+
+  <!-- Sort -->
   <div class="col-md-2">
-    <select name="sort" class="form-select">
-      <option value="">Sort</option>
+    <label class="form-label mb-1" for="sortSel">Sort</label>
+    <select id="sortSel" name="sort" class="form-select">
+      <option value="">Default</option>
       <option value="price_asc"  {% if sort == "price_asc" %}selected{% endif %}>Price ↑</option>
       <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price ↓</option>
       <option value="name_asc"   {% if sort == "name_asc" %}selected{% endif %}>Name A–Z</option>
       <option value="name_desc"  {% if sort == "name_desc" %}selected{% endif %}>Name Z–A</option>
-      <option value="newest"     {% if sort == "newest" %}selected{% endif %}>Newest</option>
-      <option value="oldest"     {% if sort == "oldest" %}selected{% endif %}>Oldest</option>
+      <option value="id"         {% if sort == "id" %}selected{% endif %}>Newest</option>
     </select>
   </div>
+
+  <!-- Per page -->
   <div class="col-md-2">
-    <select name="per_page" class="form-select">
+    <label class="form-label mb-1" for="perPageSel">Results</label>
+    <select id="perPageSel" name="per_page" class="form-select">
       {% for n in per_page_options %}
         <option value="{{ n }}" {% if per_page|stringformat:"s" == n|stringformat:"s" %}selected{% endif %}>
           {{ n }} / page
@@ -34,26 +77,86 @@
       {% endfor %}
     </select>
   </div>
-  <div class="col-md-1">
-    <button type="submit" class="btn btn-primary w-100">Apply</button>
+
+  <!-- Buttons -->
+  <div class="col-md-3 d-flex align-items-end gap-2">
+    <button type="submit" class="btn btn-primary"
+            onclick="this.disabled=true; this.form.submit();">Apply</button>
+    <a href="{% url 'products' %}?clear=1" class="btn btn-outline-secondary">Clear</a>
   </div>
 </form>
 
-<!-- Product cards -->
-<div class="row mx-3 gap-3">
-  {% for product in products %}
-  <div class="card" style="width: 18rem;">
-    <a class="text-decoration-none text-dark" href="{% url 'product' product.id %}">
-      <img class="card-img-top" src="{{ product.image_url }}" alt="{{ product.name }}">
-      <div class="card-body">
-        <h5 class="card-title">{{ product.name }}</h5>
-        <h5 class="card-title">${{ product.price }}</h5>
-        <p>{{ product.quantity }} in stock</p>
-      </div>
-    </a>
+<!-- Active filter chips -->
+{% if query or min_price or max_price or selected_category or in_stock %}
+  <div class="mb-3">
+    <span class="me-2">Active:</span>
+
+    {% if query %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'q='|cut:query|safe }}">q:“{{ query }}” ✕</a>
+    {% endif %}
+
+    {% if selected_category %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'category='|cut:selected_category|safe }}">Category: {{ selected_category }} ✕</a>
+    {% endif %}
+
+    {% if min_price %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'price_min='|cut:min_price|safe }}">Min: {{ min_price }} ✕</a>
+    {% endif %}
+
+    {% if max_price %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'price_max='|cut:max_price|safe }}">Max: {{ max_price }} ✕</a>
+    {% endif %}
+
+    {% if in_stock %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'in_stock=1'|safe }}">In stock ✕</a>
+    {% endif %}
   </div>
+{% endif %}
+
+<!-- Counts + perf -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <p class="text-muted m-0">
+    Showing {{ page_obj.paginator.count }} item{{ page_obj.paginator.count|pluralize }}
+  </p>
+  <p class="text-muted small m-0">
+    Rendered in {{ elapsed_ms }} ms
+  </p>
+</div>
+
+<!-- Product cards -->
+<div class="row mx-1 gy-3">
+  {% for product in products %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+      <div class="card w-100">
+        <a class="text-decoration-none text-dark" href="{% url 'product' product.id %}">
+          <img class="card-img-top" src="{{ product.image_url }}" alt="{{ product.name }}">
+          <div class="card-body">
+            <h5 class="card-title mb-1">{{ product.name }}</h5>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">${{ product.price }}</span>
+              <span class="text-muted small">
+                {{ product.total_quantity|default:"0" }} in stock
+              </span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
   {% empty %}
-    <p>No products match your filters.</p>
+    <div class="alert alert-light border d-flex justify-content-between align-items-center">
+      <div>
+        <strong>No items match your filters.</strong>
+        <div class="text-muted small">Try widening your price range or removing a filter.</div>
+      </div>
+      <div>
+        <a href="{% url 'products' %}?clear=1" class="btn btn-outline-secondary">Reset filters</a>
+      </div>
+    </div>
   {% endfor %}
 </div>
 

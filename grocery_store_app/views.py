@@ -275,6 +275,10 @@ def product_select_store(request, id):
 
 # Product listing with multi-filtering, sorting, pagination, persistence, perf timing
 def products(request):
+    # If user clicked "Clear", wipe saved filters and redirect to a clean URL
+    if request.GET.get("clear") == "1":
+        request.session.pop("products_filters", None)
+        return redirect("products")
     # Restore last-used filters if user lands on the page with no querystring
     if request.method == "GET" and not request.GET:
         saved = request.session.get("products_filters")
@@ -297,6 +301,13 @@ def products(request):
         "name_desc": "-name",
         "id": "id",  # default
     }
+    # Normalize param names so either scheme works (min_price/max_price or price_min/price_max)
+    params = request.GET.copy()
+    if "min_price" in params and "price_min" not in params:
+        params["price_min"] = params["min_price"]
+    if "max_price" in params and "price_max" not in params:
+        params["price_max"] = params["max_price"]
+
     sort_key = sort if sort in sort_map else "id"
 
     # Multi-filter (U118): q, category, price_min, price_max, in_stock
