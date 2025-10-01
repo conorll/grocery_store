@@ -6,15 +6,7 @@
 trigger:
   branches:
     include:
-      - main
-      - shopping_cart
-      - seb-order-information
-      - bryce-product-filtering
-      - feat-inventory-management
-      - feat/staffMgmt
-      - seb-store-location-management
-      - feat-product-management
-      - feat/maksym
+      - '*'
 
 pool:
   name: mypool
