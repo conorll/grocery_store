@@ -5,9 +5,11 @@ from .models import Cart , CartEntry
 from .models import Store
 from .models import PerStoreProduct 
 from .models import Address 
-from .models import Payment 
+from .models import Payment
+from .models.order import Order
 from .forms import PostcodeForm, CustomUserCreationForm
 from .utils import geocode_postcode, haversine
+from .services import create_order_from_cart
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -130,11 +132,12 @@ def checkout_payment(request):
             print("")
         payment = Payment.objects.create(user=request.user, card_number=card_number, expiration_month=expiration_month, expiration_year=expiration_year, cvc=cvc)
 
-        for entry in entries:
-            entry.per_store_product.quantity -= entry.quantity
-            entry.per_store_product.save()
+        # After saving the payment, create the order and order items:
+        order = create_order_from_cart(request.user)
 
-        cart.cart_entries.all().delete()
+        if not order:
+            messages.error(request, "Something went wrong creating your order. Please try again.")
+            return redirect("cart")
 
         return redirect("confirm")
 
@@ -369,10 +372,18 @@ def authView(request):
 
     return render(request, "registration/signup.html", {"form": form})
 
-# User Profile View
+# Profile View
 @login_required
 def profile(request):
-    return render(request, "grocery_store_app/profile.html", {"user": request.user})
+    user = request.user
+    active_orders = user.orders.filter(status='active')
+    past_orders = user.orders.filter(status='completed').order_by('-created_at')[:5]
+
+    return render(request, "grocery_store_app/profile.html", {
+        "user": user,
+        "active_orders": active_orders,
+        "past_orders": past_orders,
+    })
 
 # Edit Profile View
 @login_required
@@ -432,3 +443,21 @@ def edit_profile(request):
             return redirect("profile")
     
     return render(request, "grocery_store_app/edit_profile.html", {"user": request.user})
+
+
+@login_required
+def order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    items = order.items.all()  # using related_name='items'
+    
+    subtotal = sum(item.subtotal() for item in items)
+    gst = subtotal * Decimal('0.10')
+    total = subtotal + gst
+
+    return render(request, 'grocery_store_app/order_detail.html', {
+        'order': order,
+        'items': items,
+        'subtotal': subtotal,
+        'gst': gst,
+        'total': total
+    })
