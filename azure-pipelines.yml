@@ -4,7 +4,9 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-  - main
+  branches:
+    include:
+      - seb-order-information
 
 pool:
   name: mypool
