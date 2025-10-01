@@ -444,7 +444,7 @@ def edit_profile(request):
     
     return render(request, "grocery_store_app/edit_profile.html", {"user": request.user})
 
-
+# Order Detail View
 @login_required
 def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
