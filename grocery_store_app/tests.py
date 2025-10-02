@@ -1,3 +1,5 @@
+# grocery_store_app/tests.py
+from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
 from .models import Category, Product, CustomUser
