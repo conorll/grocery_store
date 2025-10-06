@@ -1,4 +1,4 @@
-__all__ = ["Store", "geocode_store", "Product", "Category", "PerStoreProduct", "Address", "Payment", "Cart", "CartEntry"]
+__all__ = ["Store", "geocode_store", "Product", "Category", "PerStoreProduct", "Address", "Payment", "Cart", "CartEntry", "CustomUserAdmin"]
 
 from .store import Store, geocode_store
 from .product import Product
@@ -8,3 +8,4 @@ from .address import Address
 from .payment import Payment 
 from .cart import Cart 
 from .cart_entry import CartEntry 
+from .custom_user_admin import CustomUserAdmin 
