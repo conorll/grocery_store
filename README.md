@@ -4,6 +4,25 @@ A Django-based e-commerce web application for a grocery store with multi-store i
 
 ## Project Structure
 
+### grocery_store_app/
+
+**Directories:**
+
+- `migrations/` - Database changes
+- `models/` - Database tables
+- `static/` - CSS, JS, images
+- `templates/` - HTML pages
+- `tests/` - Unit tests
+
+**Files:**
+
+- `admin.py` - Admin interface
+- `apps.py` - App settings
+- `forms.py` - Web forms
+- `urls.py` - URL routes
+- `utils.py` - Helper functions
+- `views.py` - Page logic
+
 ### F109 Client Management
 
     - Added paths to urls.py for profile page, edit profile page, login page and signup page
