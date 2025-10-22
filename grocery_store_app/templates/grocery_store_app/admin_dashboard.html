@@ -1,0 +1,276 @@
+{% extends "grocery_store_app/layout.html" %}
+
+{% block title %}Admin Dashboard - Grocery Store{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Admin Dashboard</h2>
+        <a href="{% url 'profile' %}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Profile
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h5 class="card-title">Total Users</h5>
+          <h3>{{ total_users }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">Active Users</h5>
+          <h3>{{ active_users }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h5 class="card-title">Total Orders</h5>
+          <h3>{{ total_orders }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <h5 class="card-title">Pending Orders</h5>
+          <h3>{{ pending_orders }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="row">
+    <!-- Left Column - User Management -->
+    <div class="col-md-8">
+      <!-- Create User Account -->
+      <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Create User Account</h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_admin">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="username" class="form-label">Username</label>
+                  <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="password" class="form-label">Password</label>
+                  <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_staff" name="is_staff">
+                  <label class="form-check-label" for="is_staff">
+                    Make Staff Member
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="is_superuser" name="is_superuser">
+                  <label class="form-check-label" for="is_superuser">
+                    Make Super Administrator
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-4 text-end">
+                <button type="submit" class="btn btn-primary">Create Account</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- User Management -->
+      <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">User Management</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    {% if user.is_active %}
+                      <span class="badge bg-success">Active</span>
+                    {% else %}
+                      <span class="badge bg-danger">Inactive</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if user.is_superuser %}
+                      <span class="badge bg-danger">Super Admin</span>
+                    {% elif user.is_staff %}
+                      <span class="badge bg-warning">Staff</span>
+                    {% else %}
+                      <span class="badge bg-secondary">User</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <form method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="toggle_user_status">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <button type="submit" class="btn btn-{% if user.is_active %}warning{% else %}success{% endif %}">
+                          {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
+                        </button>
+                      </form>
+                      {% if not user.is_superuser %}
+                      <form method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="make_staff">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <button type="submit" class="btn btn-{% if user.is_staff %}secondary{% else %}info{% endif %}">
+                          {% if user.is_staff %}Remove Staff{% else %}Make Staff{% endif %}
+                        </button>
+                      </form>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Order Management -->
+    <div class="col-md-4">
+      <div class="card shadow">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0">Order Status Management</h5>
+        </div>
+        <div class="card-body">
+          <!-- User Selection Dropdown -->
+          <div class="mb-3">
+            <label for="userSelect" class="form-label">Select User to View Orders:</label>
+            <form method="get" id="userFilterForm">
+              <div class="input-group">
+                <select name="user_id" id="userSelect" class="form-select" onchange="document.getElementById('userFilterForm').submit();">
+                  <option value="">-- Select a User --</option>
+                  {% for user in all_users_for_dropdown %}
+                  <option value="{{ user.id }}" {% if selected_user and selected_user.id == user.id %}selected{% endif %}>
+                    {{ user.username }} ({{ user.email }})
+                  </option>
+                  {% endfor %}
+                </select>
+                {% if selected_user %}
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Clear</a>
+                {% endif %}
+              </div>
+            </form>
+          </div>
+
+          <!-- Selected User Info -->
+          {% if selected_user %}
+          <div class="alert alert-info">
+            <strong>Viewing orders for:</strong> {{ selected_user.username }}<br>
+            <small>Total orders: {{ user_orders.count }}</small>
+          </div>
+          {% endif %}
+
+          <!-- Orders List -->
+          <div style="max-height: 500px; overflow-y: auto;">
+            {% if selected_user %}
+              {% for order in user_orders %}
+              <div class="border-bottom pb-2 mb-2">
+                <div class="row">
+                  <div class="col-12">
+                    <strong>Order #{{ order.id }}</strong><br>
+                    <small class="text-muted">{{ order.created_at|date:"M d, Y H:i" }}</small><br>
+                    <small class="text-muted">Total: ${{ order.total_amount|floatformat:2 }}</small><br>
+                    <span class="badge bg-{% if order.status == 'active' %}warning{% elif order.status == 'completed' %}success{% else %}secondary{% endif %}">
+                      {{ order.status|capfirst }}
+                    </span>
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_order_status">
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    <div class="input-group input-group-sm">
+                      <select name="new_status" class="form-select">
+                        <option value="active" {% if order.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                      </select>
+                      <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              {% empty %}
+              <div class="text-center text-muted">
+                <p>No orders found for {{ selected_user.username }}</p>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-center text-muted py-4">
+                <i class="fas fa-users fa-3x mb-3"></i>
+                <h6>Select a User</h6>
+                <p>Please select a user from the dropdown above to view and manage their orders.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

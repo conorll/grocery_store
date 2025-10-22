@@ -1,12 +1,13 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from grocery_store_app.models import CustomUser
 from grocery_store_app.models import Cart, Store, PerStoreProduct, Product, Category, CartEntry
 from grocery_store_app.views import update_cart
 
 
 class UpdateCartTests(TestCase):
   def setUp(self):
-    self.user = User.objects.create_user(username="testuser", password="password")
+    self.user = CustomUser.objects.create_user(username="testuser", password="password")
 
     self.store = Store.objects.create(
       name="Test Store",

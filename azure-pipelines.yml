@@ -6,8 +6,9 @@
 trigger:
   branches:
     include:
-      - seb-order-information
-      - '*'
+    - feat-inventory-management
+    exclude:
+    - '*'
 
 pool:
   name: mypool

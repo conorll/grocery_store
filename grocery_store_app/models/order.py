@@ -1,8 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User
 from decimal import Decimal
 from .address import Address
 from .payment import Payment
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class Order(models.Model):
     STATUS_CHOICES = [
