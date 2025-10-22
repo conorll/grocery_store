@@ -3,8 +3,27 @@
 
 {% block body %}
 <div class="container mt-4">
-  <h2>Order #{{ order.id }} Details</h2>
-  <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y" }}</p>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>Order #{{ order.id }} Details</h2>
+      <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+      <p><strong>Status:</strong> 
+        <span class="badge bg-{% if order.status == 'active' %}warning{% elif order.status == 'completed' %}success{% elif order.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+          {{ order.status|capfirst }}
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
 
   <table class="table">
     <thead>
@@ -41,6 +60,16 @@
     </tfoot>
   </table>
 
-  <a href="{% url 'profile' %}" class="btn btn-secondary">Back to Profile</a>
+  <div class="d-flex justify-content-between mt-4">
+    <a href="{% url 'profile' %}" class="btn btn-secondary">Back to Profile</a>
+    
+    {% if order.status == 'active' %}
+    <form method="post" onsubmit="return confirm('Are you sure you want to cancel this order? This action cannot be undone.')">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="cancel_order">
+      <button type="submit" class="btn btn-danger">Cancel Order</button>
+    </form>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}

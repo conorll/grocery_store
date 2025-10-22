@@ -46,7 +46,7 @@
       </div>
 
       <!-- Past Orders Section -->
-      <div class="card shadow">
+      <div class="card shadow mb-4">
         <div class="card-header bg-secondary text-white">
           <h4 class="mb-0">Past Orders</h4>
         </div>
@@ -85,6 +85,42 @@
           {% endif %}
         </div>
       </div>
+
+      <!-- Admin Access Section -->
+      {% if user.is_staff or user.is_superuser %}
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Administrator Access</h4>
+        </div>
+        
+        <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+          <div class="text-center mb-3">
+            <h5 class="text-primary">Admin Dashboard</h5>
+            <p class="text-muted">Access the custom admin dashboard to manage users, create admin accounts, and monitor order status.</p>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-primary">
+              <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+            </a>
+          </div>
+          
+          <hr>
+          
+          <div class="text-center">
+            <h6 class="text-primary mb-2">Your Privileges</h6>
+            {% if user.is_superuser %}
+              <span class="badge bg-danger mb-2">Super Administrator</span><br>
+              <small class="text-muted">
+                Full system access • User management • Content management • System configuration
+              </small>
+            {% elif user.is_staff %}
+              <span class="badge bg-warning mb-2">Staff Member</span><br>
+              <small class="text-muted">
+                Admin interface access • Content management • Limited user management
+              </small>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
     </div>
 
     <!-- Right Column - Profile & Payment -->
@@ -160,20 +196,23 @@
           {% else %}
             <div class="text-center text-muted">
               <p>No payment method on file</p>
-              <a href="#" class="btn btn-outline-success">Add Payment Method</a>
+              <a href="{% url 'add_payment' %}" class="btn btn-outline-success">Add Payment Method</a>
             </div>
           {% endif %}
         </div>
         
         {% if user.payment_set.first %}
         <div class="card-footer text-center">
-          <a href="#" class="btn btn-warning me-2">
+          <a href="{% url 'edit_payment' %}" class="btn btn-warning me-2">
             Edit Payment Details
           </a>
-          <a href="#" class="btn btn-danger" 
-             onclick="return confirm('Are you sure you want to remove this payment method?')">
-            Remove Payment Method
-          </a>
+          <form method="post" action="{% url 'remove_payment' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" 
+                    onclick="return confirm('Are you sure you want to remove this payment method?')">
+              Remove Payment Method
+            </button>
+          </form>
         </div>
         {% endif %}
       </div>

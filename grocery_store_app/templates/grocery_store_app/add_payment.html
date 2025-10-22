@@ -1,0 +1,110 @@
+{% extends "grocery_store_app/layout.html" %}
+
+{% block title %}Add Payment Method - Grocery Store{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">Add Payment Method</h4>
+        </div>
+        
+        <div class="card-body">
+          <!-- Display messages -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          
+          <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label for="card_number" class="form-label">Card Number</label>
+              <input type="text" class="form-control" id="card_number" name="card_number" 
+                     placeholder="1234567890123456" maxlength="16" required>
+              <div class="form-text">Enter your 16-digit card number</div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="expiration_month" class="form-label">Expiration Month</label>
+                <select class="form-select" id="expiration_month" name="expiration_month" required>
+                  <option value="">Select Month</option>
+                  <option value="1">01 - January</option>
+                  <option value="2">02 - February</option>
+                  <option value="3">03 - March</option>
+                  <option value="4">04 - April</option>
+                  <option value="5">05 - May</option>
+                  <option value="6">06 - June</option>
+                  <option value="7">07 - July</option>
+                  <option value="8">08 - August</option>
+                  <option value="9">09 - September</option>
+                  <option value="10">10 - October</option>
+                  <option value="11">11 - November</option>
+                  <option value="12">12 - December</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="expiration_year" class="form-label">Expiration Year</label>
+                <select class="form-select" id="expiration_year" name="expiration_year" required>
+                  <option value="">Select Year</option>
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                  <option value="2031">2031</option>
+                  <option value="2032">2032</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="cvc" class="form-label">CVC</label>
+              <input type="text" class="form-control" id="cvc" name="cvc" 
+                     placeholder="123" maxlength="3" required>
+              <div class="form-text">3-digit security code on the back of your card</div>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-credit-card"></i> Add Payment Method
+              </button>
+              <a href="{% url 'profile' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for form validation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cardNumberInput = document.getElementById('card_number');
+    const cvcInput = document.getElementById('cvc');
+    
+    // Allow only numbers for card number
+    cardNumberInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+    
+    // Allow only numbers for CVC
+    cvcInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+});
+</script>
+{% endblock %}

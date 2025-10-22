@@ -28,4 +28,10 @@ urlpatterns = [
     #Profile
     path("profile/", views.profile, name="profile"),
     path("profile/edit/", views.edit_profile, name="edit_profile"),
+    #Payment Management
+    path("profile/payment/add/", views.add_payment_method, name="add_payment"),
+    path("profile/payment/edit/", views.edit_payment_method, name="edit_payment"),
+    path("profile/payment/remove/", views.remove_payment_method, name="remove_payment"),
+    #Admin Dashboard
+    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
 ]

@@ -422,7 +422,7 @@ def edit_profile(request):
                 errors.append("Current password is incorrect.")
             elif new_password1 != new_password2:
                 errors.append("New passwords do not match.")
-            elif len(new_password1) < 8:
+            elif new_password1 and len(new_password1) < 8:
                 errors.append("New password must be at least 8 characters long.")
         
         if errors:
@@ -449,6 +449,17 @@ def edit_profile(request):
 @login_required
 def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Handle order cancellation
+    if request.method == "POST" and request.POST.get("action") == "cancel_order":
+        if order.status == 'Active':
+            order.status = 'Cancelled'
+            order.save()
+            messages.success(request, f"Order #{order.id} has been cancelled successfully.")
+        else:
+            messages.error(request, "Only active orders can be cancelled.")
+        return redirect('order_detail', order_id=order.id)
+    
     items = order.items.all()  # using related_name='items'
     
     def rounded(value):
@@ -466,3 +477,219 @@ def order_detail(request, order_id):
         'gst': gst,
         'total': total
     })
+
+# Payment Management Views
+@login_required
+def add_payment_method(request):
+    if request.method == "POST":
+        card_number = request.POST.get("card_number")
+        expiration_month = request.POST.get("expiration_month")
+        expiration_year = request.POST.get("expiration_year")
+        cvc = request.POST.get("cvc")
+        
+        errors = []
+        
+        # Basic validation
+        if not card_number or len(card_number) != 16 or not card_number.isdigit():
+            errors.append("Card number must be 16 digits.")
+        
+        if not expiration_month or int(expiration_month) < 1 or int(expiration_month) > 12:
+            errors.append("Please select a valid expiration month.")
+            
+        if not expiration_year or int(expiration_year) < 2024:
+            errors.append("Please select a valid expiration year.")
+            
+        if not cvc or len(cvc) != 3 or not cvc.isdigit():
+            errors.append("CVC must be 3 digits.")
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            # Remove existing payment method if exists
+            Payment.objects.filter(user=request.user).delete()
+            
+            # Create new payment method
+            Payment.objects.create(
+                user=request.user,
+                card_number=int(card_number),
+                expiration_month=int(expiration_month),
+                expiration_year=int(expiration_year),
+                cvc=int(cvc)
+            )
+            
+            messages.success(request, "Payment method added successfully!")
+            return redirect("profile")
+    
+    return render(request, "grocery_store_app/add_payment.html")
+
+@login_required
+def edit_payment_method(request):
+    try:
+        payment = Payment.objects.get(user=request.user)
+    except Payment.DoesNotExist:
+        messages.error(request, "No payment method found.")
+        return redirect("profile")
+    
+    if request.method == "POST":
+        card_number = request.POST.get("card_number")
+        expiration_month = request.POST.get("expiration_month")
+        expiration_year = request.POST.get("expiration_year")
+        cvc = request.POST.get("cvc")
+        
+        errors = []
+        
+        # Basic validation
+        if not card_number or len(card_number) != 16 or not card_number.isdigit():
+            errors.append("Card number must be 16 digits.")
+        
+        if not expiration_month or int(expiration_month) < 1 or int(expiration_month) > 12:
+            errors.append("Please select a valid expiration month.")
+            
+        if not expiration_year or int(expiration_year) < 2024:
+            errors.append("Please select a valid expiration year.")
+            
+        if not cvc or len(cvc) != 3 or not cvc.isdigit():
+            errors.append("CVC must be 3 digits.")
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            # Update payment method
+            payment.card_number = int(card_number)
+            payment.expiration_month = int(expiration_month)
+            payment.expiration_year = int(expiration_year)
+            payment.cvc = int(cvc)
+            payment.save()
+            
+            messages.success(request, "Payment method updated successfully!")
+            return redirect("profile")
+    
+    return render(request, "grocery_store_app/edit_payment.html", {"payment": payment})
+
+@login_required
+def remove_payment_method(request):
+    if request.method == "POST":
+        Payment.objects.filter(user=request.user).delete()
+        messages.success(request, "Payment method removed successfully!")
+    
+    return redirect("profile")
+
+# Admin Dashboard Views
+@login_required
+def admin_dashboard(request):
+    # Check if user has admin privileges
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Access denied. Admin privileges required.")
+        return redirect("profile")
+    
+    # Get all users for management and dropdown
+    users = User.objects.all().order_by('-date_joined')
+    all_users_for_dropdown = User.objects.all().order_by('username')
+    
+    # Get all orders for status management
+    orders = Order.objects.all().order_by('-created_at')
+    
+    # Handle user selection for order filtering
+    selected_user = None
+    user_orders = []
+    selected_user_id = request.GET.get('user_id')
+    
+    if selected_user_id:
+        try:
+            selected_user = User.objects.get(id=selected_user_id)
+            user_orders = Order.objects.filter(user=selected_user).order_by('-created_at')
+        except User.DoesNotExist:
+            messages.error(request, "Selected user not found.")
+    
+    # Handle user management actions
+    if request.method == "POST":
+        action = request.POST.get("action")
+        
+        if action == "create_admin":
+            username = request.POST.get("username")
+            email = request.POST.get("email")
+            password = request.POST.get("password")
+            is_staff = request.POST.get("is_staff") == "on"
+            is_superuser = request.POST.get("is_superuser") == "on"
+            
+            if username and email and password:
+                if User.objects.filter(username=username).exists():
+                    messages.error(request, "Username already exists.")
+                elif User.objects.filter(email=email).exists():
+                    messages.error(request, "Email already exists.")
+                else:
+                    user = User.objects.create_user(
+                        username=username,
+                        email=email,
+                        password=password,
+                        is_staff=is_staff,
+                        is_superuser=is_superuser
+                    )
+                    
+                    # Determine account type for message
+                    if is_superuser:
+                        account_type = "Super Administrator"
+                    elif is_staff:
+                        account_type = "Staff"
+                    else:
+                        account_type = "User"
+                    
+                    messages.success(request, f"{account_type} account '{username}' created successfully!")
+            else:
+                messages.error(request, "All fields are required for account creation.")
+        
+        elif action == "toggle_user_status":
+            user_id = request.POST.get("user_id")
+            try:
+                user = User.objects.get(id=user_id)
+                user.is_active = not user.is_active
+                user.save()
+                status = "activated" if user.is_active else "deactivated"
+                messages.success(request, f"User '{user.username}' has been {status}.")
+            except User.DoesNotExist:
+                messages.error(request, "User not found.")
+        
+        elif action == "make_staff":
+            user_id = request.POST.get("user_id")
+            try:
+                user = User.objects.get(id=user_id)
+                user.is_staff = not user.is_staff
+                user.save()
+                status = "granted" if user.is_staff else "revoked"
+                messages.success(request, f"Staff privileges {status} for '{user.username}'.")
+            except User.DoesNotExist:
+                messages.error(request, "User not found.")
+        
+        elif action == "update_order_status":
+            order_id = request.POST.get("order_id")
+            new_status = request.POST.get("new_status")
+            try:
+                order = Order.objects.get(id=order_id)
+                order.status = new_status
+                order.save()
+                messages.success(request, f"Order #{order.id} status updated to '{new_status}'.")
+                
+                # Redirect back to the same user selection if one was selected
+                if selected_user_id:
+                    return redirect(f"{request.path}?user_id={selected_user_id}")
+                    
+            except Order.DoesNotExist:
+                messages.error(request, "Order not found.")
+        
+        return redirect("admin_dashboard")
+    
+    context = {
+        'users': users,
+        'orders': orders,
+        'all_users_for_dropdown': all_users_for_dropdown,
+        'selected_user': selected_user,
+        'user_orders': user_orders,
+        'total_users': users.count(),
+        'active_users': users.filter(is_active=True).count(),
+        'total_orders': orders.count(),
+        'pending_orders': orders.filter(status='active').count(),
+    }
+    
+    return render(request, "grocery_store_app/admin_dashboard.html", context)
