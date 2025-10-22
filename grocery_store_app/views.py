@@ -319,7 +319,7 @@ def products(request):
 # Stores listing and closest store finder view
 def stores(request):
     # Get all stores with valid coordinates
-    store_objects = Store.objects.exclude(latitude__isnull=True, longitude__isnull=True)
+    store_objects = Store.objects.exclude(latitude__isnull=True, longitude__isnull=True).select_related("hours")
     closest_store = None
     distance_km = None
 

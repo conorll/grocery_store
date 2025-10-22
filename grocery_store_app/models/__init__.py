@@ -1,6 +1,6 @@
-__all__ = ["Store", "geocode_store", "Product", "Category", "PerStoreProduct", "Address", "Payment", "Cart", "CartEntry", "CustomUserAdmin", "Order", "OrderItem"]
+__all__ = ["Store", "geocode_store", "Product", "Category", "PerStoreProduct", "Address", "Payment", "Cart", "CartEntry", "CustomUserAdmin", "Order", "OrderItem", "StoreOpeningHours"]
 
-from .store import Store, geocode_store
+from .store import Store, geocode_store, StoreOpeningHours
 from .product import Product
 from .category import Category
 from .per_store_product import PerStoreProduct 

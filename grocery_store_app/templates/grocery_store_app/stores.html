@@ -44,7 +44,20 @@
           </p>
           
           <!--Store opening hours-->
-          <p class="card-text text-muted">{{ store.opening_hours|linebreaksbr }}</p>
+          {% if store.hours %}
+            <div class="card-text text-muted small">
+              <strong>Opening Hours:</strong><br>
+                Mon: {{ store.hours.monday_open|time:"g:i A" }} – {{ store.hours.monday_close|time:"g:i A" }}<br>
+                Tue: {{ store.hours.tuesday_open|time:"g:i A" }} – {{ store.hours.tuesday_close|time:"g:i A" }}<br>
+                Wed: {{ store.hours.wednesday_open|time:"g:i A" }} – {{ store.hours.wednesday_close|time:"g:i A" }}<br>
+                Thu: {{ store.hours.thursday_open|time:"g:i A" }} – {{ store.hours.thursday_close|time:"g:i A" }}<br>
+                Fri: {{ store.hours.friday_open|time:"g:i A" }} – {{ store.hours.friday_close|time:"g:i A" }}<br>
+                Sat: {{ store.hours.saturday_open|time:"g:i A" }} – {{ store.hours.saturday_close|time:"g:i A" }}<br>
+                Sun: {{ store.hours.sunday_open|time:"g:i A" }} – {{ store.hours.sunday_close|time:"g:i A" }}
+            </div>
+          {% else %}
+            <p class="card-text text-muted"><em>Hours not set.</em></p>
+          {% endif %}
         </div>
       </div>
     </div>
