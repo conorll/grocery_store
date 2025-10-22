@@ -7,22 +7,28 @@
   <div class="row">
     <!-- Left Column - Orders -->
     <div class="col-md-6">
+
       <!-- Active Orders Section -->
       <div class="card shadow mb-4">
         <div class="card-header bg-warning text-dark">
           <h4 class="mb-0">Active Orders</h4>
         </div>
         
-        <div class="card-body">
-          {% comment %}
-          <!-- This will need to be implemented when Order model is created -->
-          {% if user.orders.filter(status='active').exists %}
-            {% for order in user.orders.filter(status='active') %}
+        <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+    
+          {% if active_orders %}
+            {% for order in active_orders %}
               <div class="border-bottom pb-2 mb-2">
                 <div class="row">
                   <div class="col-8">
-                    <strong>Order #{{ order.id }}</strong><br>
-                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                    <strong><a href="{% url 'order_detail' order.id %}">Order #{{ order.id }}</a></strong></br>
+                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }} </br>
+                    {% if order.items.first.per_store_product %}
+                      Fulfilled by: {{ order.items.first.per_store_product.store.name }}
+                    {% else %}
+                      Fulfilled by: Unknown
+                    {% endif %}
+                    </small>
                   </div>
                   <div class="col-4 text-end">
                     <span class="badge bg-warning">${{ order.total }}</span>
@@ -31,14 +37,11 @@
               </div>
             {% endfor %}
           {% else %}
-          {% endcomment %}
             <div class="text-center text-muted">
               <p>No active orders</p>
               <a href="{% url 'products' %}" class="btn btn-outline-warning">Start Shopping</a>
             </div>
-          {% comment %}
           {% endif %}
-          {% endcomment %}
         </div>
       </div>
 
@@ -48,16 +51,21 @@
           <h4 class="mb-0">Past Orders</h4>
         </div>
         
-        <div class="card-body">
-          {% comment %}
-          <!-- This will need to be implemented when Order model is created -->
-          {% if user.orders.filter(status='completed').exists %}
-            {% for order in user.orders.filter(status='completed')|slice:":5" %}
+        <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+
+          {% if past_orders %}
+            {% for order in past_orders|slice:":5" %}
               <div class="border-bottom pb-2 mb-2">
                 <div class="row">
                   <div class="col-8">
-                    <strong>Order #{{ order.id }}</strong><br>
-                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                    <strong><a href="{% url 'order_detail' order.id %}">Order #{{ order.id }}</a></strong></br>
+                    <small class="text-muted">{{ order.created_at|date:"M d, Y" }}
+                    {% if order.items.first.per_store_product %}
+                      Fulfilled by: {{ order.items.first.per_store_product.store.name }}
+                    {% else %}
+                      Fulfilled by: Unknown
+                    {% endif %}
+                    </small>
                   </div>
                   <div class="col-4 text-end">
                     <span class="badge bg-success">${{ order.total }}</span>
@@ -69,14 +77,12 @@
               <a href="#" class="btn btn-outline-secondary btn-sm">View All Orders</a>
             </div>
           {% else %}
-          {% endcomment %}
+
             <div class="text-center text-muted">
               <p>No past orders</p>
               <small>Your completed orders will appear here</small>
             </div>
-          {% comment %}
           {% endif %}
-          {% endcomment %}
         </div>
       </div>
     </div>

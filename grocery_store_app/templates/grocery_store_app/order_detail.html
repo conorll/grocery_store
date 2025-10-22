@@ -1,0 +1,46 @@
+{% extends "grocery_store_app/layout.html" %}
+{% block title %}Order #{{ order.id }} Details{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+  <h2>Order #{{ order.id }} Details</h2>
+  <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y" }}</p>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Unit Price</th>
+        <th>Quantity</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.product.name }}</td>
+        <td>${{ item.price }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>${{ item.subtotal }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+        <td>${{ subtotal }}</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="text-end"><strong>GST (10%):</strong></td>
+        <td>${{ gst }}</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+        <td>${{ total }}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <a href="{% url 'profile' %}" class="btn btn-secondary">Back to Profile</a>
+</div>
+{% endblock %}
