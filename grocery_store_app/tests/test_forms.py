@@ -1,12 +1,13 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from grocery_store_app.models import CustomUser
 from grocery_store_app.forms import CustomUserCreationForm
 
 
 class CustomUserCreationFormTests(TestCase):
   def setUp(self):
     # Create an existing user for email validation tests
-    self.existing_user = User.objects.create_user(
+    self.existing_user = CustomUser.objects.create_user(
       username="existinguser",
       email="existing@example.com",
       password="password123"
