@@ -280,11 +280,10 @@ def product_select_store(request, id):
 
 # Product listing with multi-filtering, sorting, pagination, persistence, perf timing
 def products(request):
-    # If user clicked "Clear", wipe saved filters and redirect to a clean URL
+    # Clear / restore saved filters
     if request.GET.get("clear") == "1":
         request.session.pop("products_filters", None)
         return redirect("products")
-    # Restore last-used filters if user lands on the page with no querystring
     if request.method == "GET" and not request.GET:
         saved = request.session.get("products_filters")
         if saved:
@@ -292,51 +291,56 @@ def products(request):
             for k, v in saved.items():
                 request.GET[k] = v
 
-    t0 = timezone.now()  # for P111 evidence
+    t0 = timezone.now()
 
-    # Base queryset (pull category with select_related to avoid N+1)
+    # Base queryset (avoid N+1 on category)
     qs = Product.objects.select_related("category").all()
 
-    # Sorting
-    sort = (request.GET.get("sort") or "").strip()
-    sort_map = {
-        "price_asc": "price",
-        "price_desc": "-price",
-        "name_asc": "name",
-        "name_desc": "-name",
-        "id": "id",  # default
-    }
-    # Normalize param names so either scheme works (min_price/max_price or price_min/price_max)
+    # Work on a mutable copy and NORMALIZE price names
     params = request.GET.copy()
     if "min_price" in params and "price_min" not in params:
         params["price_min"] = params["min_price"]
     if "max_price" in params and "price_max" not in params:
         params["price_max"] = params["max_price"]
 
+    # Apply filters using the NORMALIZED params
+    # (If your helper accepts selected_store_id, pass it too)
+    try:
+        selected_store_id = request.session.get("selected_store_id")
+        qs = apply_product_filters(qs, params, selected_store_id=selected_store_id)
+    except TypeError:
+        qs = apply_product_filters(qs, params)
+
+    # Sorting (add newest/oldest)
+    sort = (params.get("sort") or "").strip()
+    sort_map = {
+        "price_asc": "price",
+        "price_desc": "-price",
+        "name_asc": "name",
+        "name_desc": "-name",
+        "newest": "-id",
+        "oldest": "id",
+        "id": "id",  # default
+    }
     sort_key = sort if sort in sort_map else "id"
-
-    # Multi-filter (U118): q, category, price_min, price_max, in_stock
-    qs = apply_product_filters(qs, request.GET)
-
-    # Apply sort
-    qs = qs.order_by(sort_map.get(sort_key, "id"))
+    qs = qs.order_by(sort_map[sort_key])
 
     # Pagination
-    per_page = request.GET.get("per_page") or "12"
+    per_page_raw = params.get("per_page") or "12"
     try:
-        per_page_int = max(1, min(60, int(per_page)))
+        per_page_int = max(1, min(60, int(per_page_raw)))
     except ValueError:
         per_page_int = 12
     paginator = Paginator(qs, per_page_int)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    page_obj = paginator.get_page(params.get("page"))
 
-    # Build querystring minus 'page' for clean pagination links
-    params = request.GET.dict()
-    params.pop("page", None)
-    querystring = urlencode(params)
+    # Build querystring (exclude 'page')
+    params_for_links = params.dict()
+    params_for_links.pop("page", None)
+    querystring = urlencode(params_for_links)
 
-    # Persist current filters (groundwork for U120)
-    request.session["products_filters"] = {k: v for k, v in request.GET.items()}
+    # Persist current filters
+    request.session["products_filters"] = {k: v for k, v in params.items()}
 
     elapsed_ms = int((timezone.now() - t0).total_seconds() * 1000)
 
@@ -347,20 +351,43 @@ def products(request):
             "products": page_obj,
             "page_obj": page_obj,
             "paginator": paginator,
-            "query": (request.GET.get("q") or ""),
-            "min_price": request.GET.get("price_min") or "",
-            "max_price": request.GET.get("price_max") or "",
+            # UI state (use normalized params so fields reflect what user typed)
+            "query": (params.get("q") or ""),
+            "min_price": params.get("min_price") or params.get("price_min") or "",
+            "max_price": params.get("max_price") or params.get("price_max") or "",
             "sort": sort_key,
             "per_page": per_page_int,
             "querystring": querystring,
             "per_page_options": [12, 24, 36, 48, 60],
-            # Extra context for UI
+            # Extras for filters & chips
             "categories": Category.objects.all(),
-            "selected_category": request.GET.get("category") or "",
-            "in_stock": request.GET.get("in_stock") == "1",
+            "selected_category": params.get("category") or "",
+            "in_stock": params.get("in_stock") == "1",
             "elapsed_ms": elapsed_ms,
         },
     )
+
+
+# ---------- JSON API (reuses the same filter helper) ----------
+def products_api(request):
+    qs = Product.objects.select_related("category").all()
+
+    # Normalize here too, so API accepts both min_price/max_price and price_min/price_max
+    params = request.GET.copy()
+    if "min_price" in params and "price_min" not in params:
+        params["price_min"] = params["min_price"]
+    if "max_price" in params and "price_max" not in params:
+        params["price_max"] = params["max_price"]
+
+    try:
+        selected_store_id = request.session.get("selected_store_id")
+        qs = apply_product_filters(qs, params, selected_store_id=selected_store_id)
+    except TypeError:
+        qs = apply_product_filters(qs, params)
+
+    qs = qs.order_by("name")
+    data = list(qs.values("id", "name", "price", "category__name"))
+    return JsonResponse({"count": len(data), "results": data}, status=200)
 
 
 # ---------- JSON API (reuses the same filter helper for reusability) ----------
