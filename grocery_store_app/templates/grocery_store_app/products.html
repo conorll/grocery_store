@@ -5,15 +5,40 @@
 
 <!-- Filter form -->
 <form method="get" class="row g-3 mb-4">
+  <!-- Search -->
   <div class="col-md-3">
     <input type="text" name="q" class="form-control" placeholder="Search…" value="{{ query }}">
   </div>
+
+  <!-- Price (old names; view normalizes) -->
   <div class="col-md-2">
     <input type="text" name="min_price" class="form-control" placeholder="Min price" value="{{ min_price }}">
   </div>
   <div class="col-md-2">
     <input type="text" name="max_price" class="form-control" placeholder="Max price" value="{{ max_price }}">
   </div>
+
+  <!-- Category -->
+  <div class="col-md-2">
+    <select name="category" class="form-select">
+      <option value="">All categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat.name }}" {% if selected_category == cat.name %}selected{% endif %}>
+          {{ cat.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- In stock (checkbox only, no quantity text here) -->
+  <div class="col-md-1 d-flex align-items-center">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="1" id="inStock" name="in_stock" {% if in_stock %}checked{% endif %}>
+      <label class="form-check-label" for="inStock">In stock</label>
+    </div>
+  </div>
+
+  <!-- Sort -->
   <div class="col-md-2">
     <select name="sort" class="form-select">
       <option value="">Sort</option>
@@ -25,6 +50,8 @@
       <option value="oldest"     {% if sort == "oldest" %}selected{% endif %}>Oldest</option>
     </select>
   </div>
+
+  <!-- Per page -->
   <div class="col-md-2">
     <select name="per_page" class="form-select">
       {% for n in per_page_options %}
@@ -34,12 +61,58 @@
       {% endfor %}
     </select>
   </div>
+
   <div class="col-md-1">
     <button type="submit" class="btn btn-primary w-100">Apply</button>
   </div>
+  <div class="col-md-2">
+    <a href="{% url 'products' %}?clear=1" class="btn btn-outline-secondary w-100">Clear</a>
+  </div>
 </form>
 
-<!-- Product cards -->
+<!-- Active filter chips (kept) -->
+{% if query or min_price or max_price or selected_category or in_stock %}
+  <div class="mb-3">
+    <span class="me-2">Active:</span>
+
+    {% if query %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'q='|cut:query|safe }}">q:“{{ query }}” ✕</a>
+    {% endif %}
+
+    {% if selected_category %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'category='|cut:selected_category|safe }}">Category: {{ selected_category }} ✕</a>
+    {% endif %}
+
+    {% if min_price %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'min_price='|cut:min_price|safe }}">Min: {{ min_price }} ✕</a>
+    {% endif %}
+
+    {% if max_price %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'max_price='|cut:max_price|safe }}">Max: {{ max_price }} ✕</a>
+    {% endif %}
+
+    {% if in_stock %}
+      <a class="badge rounded-pill text-bg-primary text-decoration-none"
+         href="?{{ querystring|cut:'in_stock=1'|safe }}">In stock ✕</a>
+    {% endif %}
+  </div>
+{% endif %}
+
+<!-- Counts + perf -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <p class="text-muted m-0">
+    Showing {{ page_obj.paginator.count }} item{{ page_obj.paginator.count|pluralize }}
+  </p>
+  <p class="text-muted small m-0">
+    Rendered in {{ elapsed_ms }} ms
+  </p>
+</div>
+
+<!-- Product cards (old layout kept, NO stock display) -->
 <div class="row mx-3 gap-3">
   {% for product in products %}
   <div class="card" style="width: 18rem;">
@@ -48,7 +121,6 @@
       <div class="card-body">
         <h5 class="card-title">{{ product.name }}</h5>
         <h5 class="card-title">${{ product.price }}</h5>
-        <p>{{ product.quantity }} in stock</p>
       </div>
     </a>
   </div>
@@ -65,11 +137,9 @@
         <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ querystring }}">Previous</a>
       </li>
     {% endif %}
-
     <li class="page-item disabled">
       <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     </li>
-
     {% if page_obj.has_next %}
       <li class="page-item">
         <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ querystring }}">Next</a>
