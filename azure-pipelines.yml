@@ -7,6 +7,7 @@ trigger:
   branches:
     include:
       - seb-order-information
+      - '*'
 
 pool:
   name: mypool
