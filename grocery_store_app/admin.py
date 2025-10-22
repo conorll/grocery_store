@@ -1,10 +1,7 @@
 from django.contrib import admin
-<<<<<<< HEAD
 from django.contrib.auth.models import User, Group
 from .models import Store, StoreOpeningHours
-=======
 from django.contrib.auth.admin import UserAdmin 
->>>>>>> a62b766b85c62f2e946df2fb8743f7fc6db27e8d
 
 # Register your models here.
 
@@ -28,23 +25,17 @@ admin.site.register(Cart)
 admin.site.register(CartEntry)
 admin.site.register(Order)
 admin.site.register(OrderItem)
-<<<<<<< HEAD
+admin.site.register(CustomUser, MyUserAdmin)
 
 class StoreOpeningHoursInline(admin.StackedInline):
     model = StoreOpeningHours
     extra = 0  # No extra blank forms
     max_num = 1  # Only one opening hours block per store
-=======
-# admin.site.register(CustomUser)
-admin.site.register(CustomUser, MyUserAdmin)
->>>>>>> a62b766b85c62f2e946df2fb8743f7fc6db27e8d
 
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
     exclude = ('latitude', 'longitude')  # hides the fields from admin form
-<<<<<<< HEAD
     inlines = [StoreOpeningHoursInline]
-=======
 
 @admin.register(PerStoreProduct)
 class QuantityAdmin(admin.ModelAdmin):
@@ -68,4 +59,3 @@ class QuantityAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(store__name=request.user.store)
->>>>>>> a62b766b85c62f2e946df2fb8743f7fc6db27e8d
