@@ -1,8 +1,10 @@
 from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
 from grocery_store_app.models import Category, Product, PerStoreProduct, Store, Cart, Address, Payment
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class ProductViewTests(TestCase):
     @classmethod

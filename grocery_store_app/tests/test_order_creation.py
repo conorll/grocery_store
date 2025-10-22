@@ -1,8 +1,10 @@
 from decimal import Decimal
 from django.test import TestCase
-from django.contrib.auth.models import User
 from grocery_store_app.models import Category, Product, PerStoreProduct, Store, Cart, Address, Payment
 from grocery_store_app.views import create_order_from_cart
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class OrderCreationTests(TestCase):
     def setUp(self):
