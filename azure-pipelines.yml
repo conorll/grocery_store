@@ -6,51 +6,74 @@
 trigger:
   branches:
     include:
-    - feat-inventory-management
-    exclude:
     - '*'
 
 pool:
   name: mypool
 
-steps:
-  - script: |
-      virtualenv venv
-    displayName: "Create Virtual Environment"
+stages:
+  - stage: "Build"
+    displayName: "Build the web application"
+    jobs:
+      - job: "BuildAndTest"
+        displayName: "Build and test web application"
+        steps:
+          - script: |
+              virtualenv venv
+            displayName: "Create Virtual Environment"
 
-  - script: |
-      source venv/bin/activate
-      python -m pip install --upgrade pip
-      pip install django
-      pip install requests
-    displayName: "Install Packages"
+          - script: |
+              source venv/bin/activate
+              python -m pip install --upgrade pip
+              pip install django
+              pip install requests
+            displayName: "Install Packages"
 
-  - script: |
-      source venv/bin/activate
-      python manage.py makemigrations
-    displayName: "Make Migrations"
+          - script: |
+              source venv/bin/activate
+              python manage.py makemigrations
+            displayName: "Make Migrations"
 
-  - script: |
-      source venv/bin/activate
-      python manage.py migrate
-    displayName: "Apply Migrations"
+          - script: |
+              source venv/bin/activate
+              python manage.py migrate
+            displayName: "Apply Migrations"
 
-  - script: |
-      source venv/bin/activate
-      python manage.py test
-    displayName: "Run tests"
+          - script: |
+              source venv/bin/activate
+              python manage.py test
+            displayName: "Run tests"
 
-  - task: CopyFiles@2
-    inputs:
-      contents: |
-        **/*
-        !venv/**
-        !**/__pycache__/**
-      targetFolder: "$(Build.ArtifactStagingDirectory)"
-    displayName: "Copy Files to Artifact Staging Directory"
+          - task: CopyFiles@2
+            inputs:
+              contents: |
+                **/*
+                !venv/**
+                !**/__pycache__/**
+              targetFolder: "$(Build.ArtifactStagingDirectory)"
+            displayName: "Copy Files to Artifact Staging Directory"
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: "$(Build.ArtifactStagingDirectory)"
-      artifactName: "grocery_store"
-    displayName: "Publish Build Artifact"
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: "$(Build.ArtifactStagingDirectory)"
+              artifactName: "grocery_store"
+            displayName: "Publish Build Artifact"
+
+  - stage: "Deploy"
+    displayName: "Deploy the web application"
+    dependsOn: Build
+    jobs:
+      - deployment: "Deploy"
+        environment: dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - download: current
+                artifact: grocery_store
+              - task: AzureWebApp@1
+                displayName: "Deploy web app"
+                inputs:
+                  azureSubscription: 'grocery store Service Connection'
+                  appName: 'grocery_store'
+                  package: '$(Pipeline.Workspace)/grocery_store/**/*.zip'
