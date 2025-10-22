@@ -23,7 +23,7 @@ admin.site.register(Cart)
 admin.site.register(CartEntry)
 admin.site.register(Order)
 admin.site.register(OrderItem)
-admin.site.register(CustomUser)
+# admin.site.register(CustomUser)
 admin.site.register(CustomUser, MyUserAdmin)
 
 @admin.register(Store)
