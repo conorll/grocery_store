@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.models import User, Group
+from .models import Store, StoreOpeningHours
 from django.contrib.auth.admin import UserAdmin 
 
 # Register your models here.
@@ -23,12 +25,17 @@ admin.site.register(Cart)
 admin.site.register(CartEntry)
 admin.site.register(Order)
 admin.site.register(OrderItem)
-# admin.site.register(CustomUser)
 admin.site.register(CustomUser, MyUserAdmin)
+
+class StoreOpeningHoursInline(admin.StackedInline):
+    model = StoreOpeningHours
+    extra = 0  # No extra blank forms
+    max_num = 1  # Only one opening hours block per store
 
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
     exclude = ('latitude', 'longitude')  # hides the fields from admin form
+    inlines = [StoreOpeningHoursInline]
 
 @admin.register(PerStoreProduct)
 class QuantityAdmin(admin.ModelAdmin):
