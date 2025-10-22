@@ -75,5 +75,5 @@ stages:
                 displayName: "Deploy web app"
                 inputs:
                   azureSubscription: 'grocery store Service Connection'
-                  appName: 'grocery_store'
+                  appName: 'grocerystorewebapp'
                   package: '$(Pipeline.Workspace)/grocery_store/**/*.zip'
