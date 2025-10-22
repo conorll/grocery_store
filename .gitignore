@@ -22,6 +22,7 @@ ENV/
 
 # SQLite database
 *.sqlite3
+db.sqlite3
 
 # OS-specific files
 .DS_Store
