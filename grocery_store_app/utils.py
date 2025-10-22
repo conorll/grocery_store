@@ -2,6 +2,8 @@ import requests
 import math
 import logging
 from typing import Tuple
+from django.db.models import Q, Exists, OuterRef
+from django.apps import apps
 
 API_KEY = "68b3c071edb8e216867405vxhafdb0c"  # Geocode.maps.co free API key
 
@@ -38,3 +40,56 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
     return R * c
+
+
+# Product Filtering
+def _dec(val, lo=0, hi=1_000_000):
+    try:
+        if val in (None, ""):
+            return None
+        v = float(val)
+        return v if lo <= v <= hi else None
+    except Exception:
+        return None
+
+
+def apply_product_filters(qs, params):
+    """
+    Apply multi-condition filters to Product queryset.
+    Supported params:
+      - q: keyword (name/description if you add it later)
+      - category: category name (exact match)
+      - price_min, price_max: numeric
+      - in_stock: "1" to require any store stock > 0
+    """
+    # lazy model lookup to avoid circular imports during app load
+    PerStoreProduct = apps.get_model("grocery_store_app", "PerStoreProduct")
+    # Search
+    q = (params.get("q") or "").strip()
+    if q:
+        qs = qs.filter(
+            Q(name__icontains=q)
+        )  # extend to description if you add the field
+
+    # Category (your Category has name only; no slug in model)
+    cat = (params.get("category") or "").strip()
+    if cat:
+        qs = qs.filter(category__name=cat)
+
+    # Price range
+    pmin = _dec(params.get("price_min"))
+    pmax = _dec(params.get("price_max"))
+    if pmin is not None:
+        qs = qs.filter(price__gte=pmin)
+    if pmax is not None:
+        qs = qs.filter(price__lte=pmax)
+
+    # In stock (exists any PerStoreProduct with quantity > 0)
+    if params.get("in_stock") == "1":
+        in_stock_exists = PerStoreProduct.objects.filter(
+            product_id=OuterRef("pk"),
+            quantity__gt=0,
+        )
+        qs = qs.annotate(_has_stock=Exists(in_stock_exists)).filter(_has_stock=True)
+
+    return qs
