@@ -9,3 +9,4 @@ from .cart_entry import *
 from .order import *
 from .order_item import *
 from .custom_user_admin import *
+from .payment import *
