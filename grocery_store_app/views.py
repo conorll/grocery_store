@@ -7,12 +7,12 @@ from .models import PerStoreProduct
 from .models import Address 
 from .models import Payment
 from .models.order import Order
+from .models import CustomUser
 from .forms import PostcodeForm, CustomUserCreationForm, CustomStaffCreationForm
 from .utils import geocode_postcode, haversine
 from .services import create_order_from_cart
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import login
 from django.db.models import Q
@@ -585,8 +585,8 @@ def admin_dashboard(request):
         return redirect("profile")
     
     # Get all users for management and dropdown
-    users = User.objects.all().order_by('-date_joined')
-    all_users_for_dropdown = User.objects.all().order_by('username')
+    users = CustomUser.objects.all().order_by('-date_joined')
+    all_users_for_dropdown = CustomUser.objects.all().order_by('username')
     
     # Get all orders for status management
     orders = Order.objects.all().order_by('-created_at')
@@ -598,9 +598,9 @@ def admin_dashboard(request):
     
     if selected_user_id:
         try:
-            selected_user = User.objects.get(id=selected_user_id)
+            selected_user = CustomUser.objects.get(id=selected_user_id)
             user_orders = Order.objects.filter(user=selected_user).order_by('-created_at')
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             messages.error(request, "Selected user not found.")
     
     # Handle user management actions
@@ -615,12 +615,12 @@ def admin_dashboard(request):
             is_superuser = request.POST.get("is_superuser") == "on"
             
             if username and email and password:
-                if User.objects.filter(username=username).exists():
+                if CustomUser.objects.filter(username=username).exists():
                     messages.error(request, "Username already exists.")
-                elif User.objects.filter(email=email).exists():
+                elif CustomUser.objects.filter(email=email).exists():
                     messages.error(request, "Email already exists.")
                 else:
-                    user = User.objects.create_user(
+                    user = CustomUser.objects.create_user(
                         username=username,
                         email=email,
                         password=password,
@@ -643,23 +643,23 @@ def admin_dashboard(request):
         elif action == "toggle_user_status":
             user_id = request.POST.get("user_id")
             try:
-                user = User.objects.get(id=user_id)
+                user = CustomUser.objects.get(id=user_id)
                 user.is_active = not user.is_active
                 user.save()
                 status = "activated" if user.is_active else "deactivated"
                 messages.success(request, f"User '{user.username}' has been {status}.")
-            except User.DoesNotExist:
+            except CustomUser.DoesNotExist:
                 messages.error(request, "User not found.")
         
         elif action == "make_staff":
             user_id = request.POST.get("user_id")
             try:
-                user = User.objects.get(id=user_id)
+                user = CustomUser.objects.get(id=user_id)
                 user.is_staff = not user.is_staff
                 user.save()
                 status = "granted" if user.is_staff else "revoked"
                 messages.success(request, f"Staff privileges {status} for '{user.username}'.")
-            except User.DoesNotExist:
+            except CustomUser.DoesNotExist:
                 messages.error(request, "User not found.")
         
         elif action == "update_order_status":
