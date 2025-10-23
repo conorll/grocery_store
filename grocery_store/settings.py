@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'grocerystorewebapp-c0fcbpg7eydfekc9.australiaeast-01.azurewebsites.net',
+    '127.0.0.1'
 ]
 
 
