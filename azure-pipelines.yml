@@ -27,6 +27,7 @@ stages:
               python -m pip install --upgrade pip
               pip install django
               pip install requests
+              pip install gunicorn 
             displayName: "Install Packages"
 
           - script: |
