@@ -73,6 +73,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'grocery_store.wsgi.application'
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://grocerystorewebapp-c0fcbpg7eydfekc9.australiaeast-01.azurewebsites.net',
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
