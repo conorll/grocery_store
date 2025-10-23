@@ -6,7 +6,7 @@
 trigger:
   branches:
     include:
-    - '*'
+    - 'build-branch'
 
 pool:
   name: mypool
