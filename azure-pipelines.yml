@@ -59,22 +59,3 @@ stages:
               pathToPublish: "$(Build.ArtifactStagingDirectory)"
               artifactName: "grocery_store"
             displayName: "Publish Build Artifact"
-
-  - stage: "Deploy"
-    displayName: "Deploy the web application"
-    dependsOn: Build
-    jobs:
-      - deployment: "Deploy"
-        environment: dev
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-              - download: current
-                artifact: grocery_store
-              - task: AzureWebApp@1
-                displayName: "Deploy web app"
-                inputs:
-                  azureSubscription: 'grocery store Service Connection'
-                  appName: 'grocerystorewebapp'
-                  package: '$(Pipeline.Workspace)/grocery_store/'
