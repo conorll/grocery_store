@@ -467,8 +467,25 @@ def authView(request):
 @login_required
 def profile(request):
     user = request.user
-    active_orders = user.orders.filter(status="active")
-    past_orders = user.orders.filter(status="completed").order_by("-created_at")[:5]
+
+    # Default to empty lists
+    active_orders = []
+    past_orders = []
+
+    active_error = False
+    past_error = False
+
+    try:
+        active_orders = user.orders.filter(status="active")
+    except Exception as e:
+        print(f"Error fetching active orders: {e}")
+        active_error = True
+
+    try:
+        past_orders = user.orders.filter(status="completed").order_by("-created_at")[:5]
+    except Exception as e:
+        print(f"Error fetching past orders: {e}")
+        past_error = True
 
     return render(
         request,
@@ -477,6 +494,8 @@ def profile(request):
             "user": user,
             "active_orders": active_orders,
             "past_orders": past_orders,
+            "active_error": active_error,
+            "past_error": past_error,
         },
     )
 
