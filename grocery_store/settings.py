@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-y!yv!kmw6=p%p7^8&uf6^w6ikz!-ccxj_10l1g94)tzfb2(_7)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'grocerystorewebapp-c0fcbpg7eydfekc9.australiaeast-01.azurewebsites.net',
+    '127.0.0.1'
+]
 
 
 # Application definition
@@ -71,6 +74,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'grocery_store.wsgi.application'
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://grocerystorewebapp-c0fcbpg7eydfekc9.australiaeast-01.azurewebsites.net',
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
