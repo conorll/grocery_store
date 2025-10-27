@@ -417,20 +417,26 @@ def stores(request):
         form = PostcodeForm(request.POST)
         if form.is_valid():
             postcode = form.cleaned_data["postcode"]
-            # Geocode the postcode to get latitude and longitude
-            user_lat, user_lng = geocode_postcode(postcode)
 
-            if user_lat and user_lng:
-                min_distance = float("inf")
-                # Find the closest store using haversine formula
-                for store in store_objects:
-                    dist = haversine(
-                        user_lat, user_lng, store.latitude, store.longitude
-                    )
-                    if dist < min_distance:
-                        min_distance = dist
-                        closest_store = store
-                        distance_km = round(min_distance, 2)
+            if not postcode.isdigit() or not (2000 <= int(postcode) <= 2999):
+                messages.error(request, "Please enter a valid NSW postcode.")
+            else:
+                # Geocode the postcode to get latitude and longitude
+                user_lat, user_lng = geocode_postcode(postcode)
+                 
+                if user_lat and user_lng:
+                    min_distance = float("inf")
+                    # Find the closest store using haversine formula
+                    for store in store_objects:
+                        dist = haversine(
+                            user_lat, user_lng, store.latitude, store.longitude
+                        )
+                        if dist < min_distance:
+                            min_distance = dist
+                            closest_store = store
+                            distance_km = round(min_distance, 2)
+                else:
+                    messages.error(request, "We couldn't locate that postcode. Please try again.")
     else:
         form = PostcodeForm()
 

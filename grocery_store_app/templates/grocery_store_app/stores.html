@@ -16,13 +16,20 @@
     </div>
   </div>
 
-  <!-- Display closest store if available -->
-  {% if closest_store %}
+  <!-- invalid postcode error -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-danger text-center">
+      {{ message }}
+    </div>
+  {% endfor %}
+<!-- Success -->
+{% elif closest_store %}
   <div class="alert alert-success text-center">
     <strong>Your closest store is:</strong><br>
     {{ closest_store.name }} ({{ distance_km }} km away)
   </div>
-  {% endif %}
+{% endif %}
 
   <!-- Store Cards -->
   <div class="row gy-4">
